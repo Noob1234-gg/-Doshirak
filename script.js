@@ -2018,6 +2018,571 @@ function endRace(winner, bet) {
     }, 3000);
 }
 
+// ======================
+// РЕЖИМ РАЗРАБОТЧИКА - ДВА УРОВНЯ ДОСТУПА
+// ======================
+
+// Пароли разработчика с разными уровнями доступа
+const DEVELOPER_PASSWORDS = {
+    // Полный доступ - все функции
+    FULL: "RK9L3M-X8Q4N2-VB6C1X-PL5S7W",
+    // Ограниченный доступ - только тестирование
+    LIMITED: "4F6H8J-1A3C5E-7G9I2K-4M6N8P"
+};
+
+// Уровни доступа
+const ACCESS_LEVELS = {
+    FULL: 'full',      // Полный доступ (разработчик)
+    LIMITED: 'limited' // Ограниченный доступ (тестировщик)
+};
+
+let currentAccessLevel = null;
+let isDeveloperMode = false;
+
+// Обновляем функцию проверки пароля разработчика
+function checkDeveloperPassword() {
+    const password = devPasswordInput.value.trim();
+    
+    // Проверяем пароль полного доступа
+    if (password === DEVELOPER_PASSWORDS.FULL) {
+        isDeveloperMode = true;
+        currentAccessLevel = ACCESS_LEVELS.FULL;
+        activateDeveloperMode('FULL');
+        showDeveloperMessage('🔓 Режим разработчика (ПОЛНЫЙ ДОСТУП) активирован', false, 'full');
+        playSound('win');
+    }
+    // Проверяем пароль ограниченного доступа
+    else if (password === DEVELOPER_PASSWORDS.LIMITED) {
+        isDeveloperMode = true;
+        currentAccessLevel = ACCESS_LEVELS.LIMITED;
+        activateDeveloperMode('LIMITED');
+        showDeveloperMessage('🔐 Режим тестировщика (ОГРАНИЧЕННЫЙ ДОСТУП) активирован', false, 'limited');
+        playSound('click');
+    }
+    else {
+        showDeveloperMessage('❌ Неверный пароль! Доступ запрещён.', true);
+        devPasswordInput.value = '';
+        devPasswordInput.focus();
+        playSound('lose');
+    }
+}
+
+// Активация режима разработчика в зависимости от уровня доступа
+function activateDeveloperMode(level) {
+    devControls.style.display = 'block';
+    submitDevPassword.style.display = 'none';
+    exitDevMode.style.display = 'inline-block';
+    devPasswordInput.style.display = 'none';
+    
+    // Показываем индикатор уровня доступа
+    addAccessLevelIndicator(level);
+    
+    // Настраиваем доступные функции в зависимости от уровня
+    configureAccessByLevel(level);
+}
+
+// Добавление индикатора уровня доступа
+function addAccessLevelIndicator(level) {
+    // Удаляем старый индикатор, если есть
+    const oldIndicator = document.querySelector('.access-level-indicator');
+    if (oldIndicator) oldIndicator.remove();
+    
+    // Создаем новый индикатор
+    const indicator = document.createElement('div');
+    indicator.className = 'access-level-indicator';
+    
+    if (level === 'FULL') {
+        indicator.innerHTML = `
+            <div style="
+                background: linear-gradient(45deg, #e94560, #ff9a3c);
+                color: white;
+                padding: 12px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border: 2px solid #fff;
+                box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+            ">
+                <i class="fas fa-crown" style="font-size: 1.5rem;"></i>
+                <div>
+                    <strong style="font-size: 1.1rem;">👑 РЕЖИМ РАЗРАБОТЧИКА (ПОЛНЫЙ ДОСТУП)</strong>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Доступны все функции: управление балансом, очистка данных, тестирование игр</div>
+                </div>
+            </div>
+        `;
+    } else {
+        indicator.innerHTML = `
+            <div style="
+                background: linear-gradient(45deg, #0f3460, #1a5fb4);
+                color: white;
+                padding: 12px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border: 2px solid #4cd964;
+                box-shadow: 0 0 20px rgba(76, 217, 100, 0.3);
+            ">
+                <i class="fas fa-flask" style="font-size: 1.5rem;"></i>
+                <div>
+                    <strong style="font-size: 1.1rem;">🧪 РЕЖИМ ТЕСТИРОВЩИКА (ОГРАНИЧЕННЫЙ ДОСТУП)</strong>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Доступно только тестирование игр</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Вставляем индикатор в начало modal-body
+    const modalBody = document.querySelector('.modal-body');
+    modalBody.insertBefore(indicator, modalBody.firstChild);
+}
+
+// Настройка доступных функций в зависимости от уровня доступа
+function configureAccessByLevel(level) {
+    // Получаем все секции управления
+    const balanceSection = document.querySelector('.dev-section:first-child');
+    const clearDataSection = document.querySelector('.dev-section:nth-child(2)');
+    const testSection = document.querySelector('.dev-section:nth-child(3)');
+    
+    if (level === 'FULL') {
+        // ПОЛНЫЙ ДОСТУП - всё доступно
+        if (balanceSection) balanceSection.style.display = 'block';
+        if (clearDataSection) clearDataSection.style.display = 'block';
+        if (testSection) testSection.style.display = 'block';
+        
+        // Добавляем дополнительные функции для полного доступа
+        addFullAccessFeatures();
+    } else {
+        // ОГРАНИЧЕННЫЙ ДОСТУП - только тестирование
+        if (balanceSection) balanceSection.style.display = 'none';
+        if (clearDataSection) clearDataSection.style.display = 'none';
+        if (testSection) testSection.style.display = 'block';
+        
+        // Блокируем изменение ставок в тестовых кнопках для ограниченного доступа
+        disableBetManipulation();
+        
+        // Добавляем дополнительные функции для тестировщика
+        addLimitedAccessFeatures();
+    }
+}
+
+// Дополнительные функции для полного доступа
+function addFullAccessFeatures() {
+    // Добавляем секцию управления промокодами
+    if (!document.querySelector('.dev-section.promo-section')) {
+        const promoSection = document.createElement('div');
+        promoSection.className = 'dev-section promo-section';
+        promoSection.innerHTML = `
+            <h4><i class="fas fa-ticket-alt"></i> Управление промокодами</h4>
+            <div class="dev-input-group">
+                <input type="text" id="devPromoCode" placeholder="Название промокода">
+                <input type="number" id="devPromoValue" placeholder="Сумма" min="1" max="10000">
+            </div>
+            <div class="dev-buttons">
+                <button class="dev-btn" id="generatePromoBtn">🎫 Сгенерировать</button>
+                <button class="dev-btn" id="addCustomPromo">➕ Добавить свой</button>
+                <button class="dev-btn" id="resetPromoCodes">🔄 Сбросить все</button>
+            </div>
+            <div class="dev-input-group" style="margin-top: 10px;">
+                <input type="text" id="promoFilter" placeholder="🔍 Поиск промокодов">
+            </div>
+            <div id="promoList" style="margin-top: 15px; max-height: 200px; overflow-y: auto;">
+                <!-- Список активных промокодов -->
+            </div>
+        `;
+        
+        const testSection = document.querySelector('.dev-section:nth-child(3)');
+        testSection.parentNode.insertBefore(promoSection, testSection.nextSibling);
+        
+        // Инициализируем функции управления промокодами
+        initPromoManagement();
+    }
+    
+    // Добавляем секцию логов
+    if (!document.querySelector('.dev-section.logs-section')) {
+        const logsSection = document.createElement('div');
+        logsSection.className = 'dev-section logs-section';
+        logsSection.innerHTML = `
+            <h4><i class="fas fa-terminal"></i> Консоль разработчика</h4>
+            <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;" id="devConsole">
+                <div style="color: #4cd964;">✅ Режим разработчика активирован</div>
+                <div style="color: #ff9a3c;">👑 Полный доступ</div>
+            </div>
+            <div class="dev-buttons" style="margin-top: 10px;">
+                <button class="dev-btn" id="clearConsole">🧹 Очистить консоль</button>
+                <button class="dev-btn" id="exportLogs">📥 Экспорт логов</button>
+            </div>
+        `;
+        
+        const promoSection = document.querySelector('.dev-section.promo-section');
+        promoSection.parentNode.insertBefore(logsSection, promoSection.nextSibling);
+        
+        initDevConsole();
+    }
+}
+
+// Инициализация управления промокодами
+function initPromoManagement() {
+    // Обновляем список промокодов
+    updatePromoList();
+    
+    // Генерация промокода
+    document.getElementById('generatePromoBtn')?.addEventListener('click', () => {
+        generatePromoCode();
+    });
+    
+    // Добавление своего промокода
+    document.getElementById('addCustomPromo')?.addEventListener('click', () => {
+        const codeInput = document.getElementById('devPromoCode');
+        const valueInput = document.getElementById('devPromoValue');
+        const code = codeInput.value.trim().toUpperCase();
+        const value = parseInt(valueInput.value);
+        
+        if (code && value > 0) {
+            addCustomPromoCode(code, value);
+            codeInput.value = '';
+            valueInput.value = '';
+        } else {
+            showDeveloperMessage('Введите название промокода и сумму!', true);
+        }
+    });
+    
+    // Сброс всех промокодов
+    document.getElementById('resetPromoCodes')?.addEventListener('click', () => {
+        if (confirm('Вы уверены? Все промокоды будут сброшены!')) {
+            resetAllPromoCodes();
+        }
+    });
+    
+    // Поиск промокодов
+    document.getElementById('promoFilter')?.addEventListener('input', (e) => {
+        filterPromoList(e.target.value);
+    });
+}
+
+// Обновление списка промокодов
+function updatePromoList() {
+    const promoList = document.getElementById('promoList');
+    if (!promoList) return;
+    
+    const promos = window.promoRewards || {};
+    let html = '<div style="color: #ff9a3c; margin-bottom: 10px;"><i class="fas fa-tags"></i> Активные промокоды:</div>';
+    
+    for (const [code, value] of Object.entries(promos)) {
+        html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 5px;">
+                <div>
+                    <span style="font-family: monospace; color: #4cd964;">${code}</span>
+                    <span style="color: #ff9a3c; margin-left: 10px;">+${value} 🍜</span>
+                </div>
+                <button class="dev-btn" style="padding: 5px 10px;" onclick="removePromoCode('${code}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+    }
+    
+    if (Object.keys(promos).length === 0) {
+        html += '<div style="color: #aaa; text-align: center; padding: 15px;">Нет активных промокодов</div>';
+    }
+    
+    promoList.innerHTML = html;
+}
+
+// Функция для удаления промокода
+window.removePromoCode = function(code) {
+    if (currentAccessLevel !== ACCESS_LEVELS.FULL) return;
+    
+    if (window.promoRewards && window.promoRewards[code]) {
+        delete window.promoRewards[code];
+        localStorage.setItem('promoRewards', JSON.stringify(window.promoRewards));
+        updatePromoList();
+        addToDevConsole(`❌ Промокод ${code} удален`, '#ff3b30');
+    }
+};
+
+// Фильтрация списка промокодов
+function filterPromoList(query) {
+    const promoList = document.getElementById('promoList');
+    if (!promoList) return;
+    
+    const items = promoList.children;
+    for (let i = 1; i < items.length; i++) {
+        const item = items[i];
+        const codeText = item.querySelector('span')?.textContent || '';
+        if (codeText.toLowerCase().includes(query.toLowerCase())) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    }
+}
+
+// Добавление своего промокода
+function addCustomPromoCode(code, value) {
+    if (currentAccessLevel !== ACCESS_LEVELS.FULL) {
+        showDeveloperMessage('❌ Недостаточно прав для добавления промокодов', true);
+        return;
+    }
+    
+    if (!window.promoRewards) {
+        window.promoRewards = { ...promoRewards };
+    }
+    
+    window.promoRewards[code] = value;
+    localStorage.setItem('promoRewards', JSON.stringify(window.promoRewards));
+    
+    updatePromoList();
+    showDeveloperMessage(`✅ Промокод ${code} (+${value}) добавлен`, false);
+    addToDevConsole(`✅ Добавлен промокод: ${code} (${value} 🍜)`, '#4cd964');
+}
+
+// Сброс всех промокодов
+function resetAllPromoCodes() {
+    if (currentAccessLevel !== ACCESS_LEVELS.FULL) return;
+    
+    // Восстанавливаем стандартные промокоды
+    window.promoRewards = {
+        'YTK455GP': 3000,
+        'CSSTART': 500,
+        'YURICH': 2000,
+        'SUBOTA': 700,
+        'BONUS': 100,
+        'GOLDENKNIGHT': 900
+    };
+    
+    localStorage.setItem('promoRewards', JSON.stringify(window.promoRewards));
+    localStorage.removeItem('usedPromoCodes');
+    usedPromoCodes = [];
+    
+    updatePromoList();
+    showDeveloperMessage('🔄 Промокоды сброшены к стандартным', false);
+    addToDevConsole('🔄 Промокоды сброшены к стандартным', '#ff9a3c');
+}
+
+// Инициализация консоли разработчика
+function initDevConsole() {
+    const console = document.getElementById('devConsole');
+    const clearBtn = document.getElementById('clearConsole');
+    const exportBtn = document.getElementById('exportLogs');
+    
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            console.innerHTML = '<div style="color: #4cd964;">✅ Консоль очищена</div>';
+        });
+    }
+    
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            const logs = console.innerText;
+            const blob = new Blob([logs], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dev-console-${new Date().toISOString()}.txt`;
+            a.click();
+        });
+    }
+}
+
+// Добавление записи в консоль разработчика
+function addToDevConsole(message, color = '#fff') {
+    const console = document.getElementById('devConsole');
+    if (!console) return;
+    
+    const time = new Date().toLocaleTimeString('ru-RU', { hour12: false });
+    const entry = document.createElement('div');
+    entry.style.color = color;
+    entry.style.marginBottom = '3px';
+    entry.style.fontSize = '0.85rem';
+    entry.innerHTML = `<span style="color: #888;">[${time}]</span> ${message}`;
+    
+    console.appendChild(entry);
+    console.scrollTop = console.scrollHeight;
+}
+
+// Дополнительные функции для ограниченного доступа
+function addLimitedAccessFeatures() {
+    // Добавляем предупреждение о невозможности изменения баланса
+    const warning = document.createElement('div');
+    warning.className = 'access-warning';
+    warning.innerHTML = `
+        <div style="
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid #ff3b30;
+            color: #ff3b30;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        ">
+            <i class="fas fa-shield-alt"></i>
+            <div>
+                <strong>Режим только для тестирования</strong><br>
+                <span style="font-size: 0.9rem;">Изменение баланса и данных недоступно</span>
+            </div>
+        </div>
+    `;
+    
+    const testSection = document.querySelector('.dev-section:nth-child(3)');
+    if (testSection && !document.querySelector('.access-warning')) {
+        testSection.appendChild(warning);
+    }
+}
+
+// Блокировка изменения ставок в тестовых кнопках
+function disableBetManipulation() {
+    // Сохраняем оригинальные обработчики и заменяем их
+    const testButtons = [
+        testWinSlotsBtn,
+        testWinGuessBtn,
+        testWinBlackjackBtn,
+        testWinRouletteBtn
+    ];
+    
+    testButtons.forEach(btn => {
+        if (btn) {
+            // Сохраняем оригинальный обработчик
+            const originalClick = btn._originalClick || btn.onclick;
+            
+            // Заменяем на новый с фиксированной ставкой
+            btn._originalClick = originalClick;
+            btn.onclick = () => {
+                // Временно устанавливаем минимальную ставку
+                const originalBet = window.slotBetElement?.textContent;
+                if (window.slotBetElement) window.slotBetElement.textContent = '5';
+                
+                // Вызываем оригинальную функцию
+                if (originalClick) originalClick.call(btn);
+                
+                // Показываем сообщение
+                showDeveloperMessage('🧪 Тестовый выигрыш (ставка 5 🍜)', false);
+            };
+        }
+    });
+}
+
+// Генерация промокода (только для полного доступа)
+function generatePromoCode() {
+    if (currentAccessLevel !== ACCESS_LEVELS.FULL) {
+        showDeveloperMessage('❌ Недостаточно прав для генерации промокодов', true);
+        return;
+    }
+    
+    const prefixes = ['DOSH', 'NOODLE', 'RAMEN', 'BONUS', 'LUCKY', 'WIN', 'GOLD', 'SUPER'];
+    const suffixes = ['100', '250', '500', '750', '888', '999', '1000', '2000', '5000'];
+    
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    
+    const newCode = `${prefix}${randomNum}${suffix}`;
+    const value = parseInt(suffix);
+    
+    // Добавляем промокод
+    if (!window.promoRewards) {
+        window.promoRewards = { ...promoRewards };
+    }
+    
+    window.promoRewards[newCode] = value;
+    localStorage.setItem('promoRewards', JSON.stringify(window.promoRewards));
+    
+    // Обновляем список
+    updatePromoList();
+    
+    // Копируем в буфер обмена
+    navigator.clipboard.writeText(newCode).then(() => {
+        showDeveloperMessage(`✅ Сгенерирован промокод: ${newCode} (+${value} 🍜)\n📋 Скопирован в буфер обмена!`, false);
+        addToDevConsole(`🎫 Сгенерирован промокод: ${newCode} (${value} 🍜)`, '#4cd964');
+    }).catch(() => {
+        showDeveloperMessage(`✅ Сгенерирован промокод: ${newCode} (+${value} 🍜)`, false);
+    });
+}
+
+// Обновляем функцию выхода из режима разработчика
+function exitDeveloperMode() {
+    // Удаляем индикатор уровня доступа
+    const indicator = document.querySelector('.access-level-indicator');
+    if (indicator) indicator.remove();
+    
+    // Удаляем дополнительные секции для полного доступа
+    if (currentAccessLevel === ACCESS_LEVELS.FULL) {
+        const promoSection = document.querySelector('.dev-section.promo-section');
+        const logsSection = document.querySelector('.dev-section.logs-section');
+        if (promoSection) promoSection.remove();
+        if (logsSection) logsSection.remove();
+    }
+    
+    // Удаляем предупреждения для ограниченного доступа
+    const warning = document.querySelector('.access-warning');
+    if (warning) warning.remove();
+    
+    resetDeveloperModal();
+    closeDeveloperModal();
+    showNotification('Режим разработчика деактивирован', 'info');
+    
+    currentAccessLevel = null;
+    isDeveloperMode = false;
+}
+
+// Обновляем функцию showDeveloperMessage для отображения уровня доступа
+function showDeveloperMessage(message, isError = false, accessLevel = null) {
+    devMessage.textContent = message;
+    devMessage.style.color = isError ? '#ff3b30' : '#4cd964';
+    
+    // Добавляем иконку в зависимости от уровня доступа
+    if (accessLevel === 'FULL') {
+        devMessage.innerHTML = `<i class="fas fa-crown" style="margin-right: 8px;"></i> ${message}`;
+    } else if (accessLevel === 'LIMITED') {
+        devMessage.innerHTML = `<i class="fas fa-flask" style="margin-right: 8px;"></i> ${message}`;
+    }
+    
+    devMessage.style.display = 'block';
+    
+    if (!isError) {
+        setTimeout(() => {
+            devMessage.style.display = 'none';
+        }, 5000);
+    }
+}
+
+// Обновляем функцию сброса модального окна
+function resetDeveloperModal() {
+    devPasswordInput.value = '';
+    devPasswordInput.style.display = 'block';
+    devControls.style.display = 'none';
+    submitDevPassword.style.display = 'inline-block';
+    exitDevMode.style.display = 'none';
+    devMessage.textContent = '';
+    
+    // Удаляем индикатор уровня доступа
+    const indicator = document.querySelector('.access-level-indicator');
+    if (indicator) indicator.remove();
+}
+
+// Инициализируем промо-коды при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    // Загружаем промокоды из localStorage или используем стандартные
+    const savedPromos = localStorage.getItem('promoRewards');
+    if (savedPromos) {
+        window.promoRewards = JSON.parse(savedPromos);
+    } else {
+        window.promoRewards = {
+            'YTK455GP': 3000,
+            'CSSTART': 500,
+            'YURICH': 2000,
+            'SUBOTA': 700,
+            'BONUS': 100,
+            'GOLDENKNIGHT': 900
+        };
+    }
+});
+
 // === ОБЩИЕ ФУНКЦИИ (оставлены без изменений) ===
 
 function loadProfile() {
