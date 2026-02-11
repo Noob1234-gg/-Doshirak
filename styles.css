@@ -1555,3 +1555,714 @@ footer {
 button.online {
     background: linear-gradient(to right, #4cd964, #2ecc71) !important;
 }
+/* Базовые стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+    min-height: 100vh;
+    padding-bottom: 30px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ========== ДЕСКТОПНАЯ ВЕРСИЯ (по умолчанию) ========== */
+@media screen and (min-width: 1025px) {
+    .container {
+        max-width: 1200px;
+        padding: 20px 30px;
+    }
+
+    header {
+        flex-direction: row;
+        padding: 30px 0;
+    }
+
+    .logo h1 {
+        font-size: 2.5rem;
+    }
+
+    .balance-container {
+        padding: 15px 30px;
+    }
+
+    .games-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+
+    .game-card {
+        padding: 30px;
+    }
+
+    .slot {
+        width: 90px;
+        height: 90px;
+        font-size: 3rem;
+    }
+
+    .roulette-wheel {
+        width: 250px;
+        height: 250px;
+    }
+
+    .race-track {
+        height: 250px;
+    }
+
+    .profile-info {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+
+    .profile-stats {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .help-sections {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+
+    .footer-content {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 50px;
+    }
+
+    .card {
+        width: 50px;
+        height: 70px;
+        font-size: 1.4rem;
+    }
+
+    .bet-amount {
+        font-size: 2rem;
+    }
+
+    .play-btn {
+        font-size: 1.4rem;
+        padding: 20px;
+    }
+
+    .tab {
+        padding: 15px 30px;
+        font-size: 1.2rem;
+    }
+
+    .share-section {
+        flex-direction: row;
+    }
+
+    .online-section {
+        padding: 25px;
+    }
+}
+
+/* ========== ПЛАНШЕТЫ (вертикальная ориентация) ========== */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+    .container {
+        max-width: 95%;
+        padding: 15px;
+    }
+
+    header {
+        flex-direction: row;
+        gap: 15px;
+    }
+
+    .logo h1 {
+        font-size: 2rem;
+    }
+
+    .profile-section {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .balance-container {
+        padding: 12px 20px;
+    }
+
+    .games-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .slot {
+        width: 70px;
+        height: 70px;
+        font-size: 2.2rem;
+    }
+
+    .profile-info {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .profile-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .help-sections {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .card {
+        width: 40px;
+        height: 60px;
+        font-size: 1.2rem;
+    }
+
+    .roulette-wheel {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+/* ========== МОБИЛЬНЫЕ УСТРОЙСТВА (смартфоны) ========== */
+@media screen and (max-width: 767px) {
+    .container {
+        width: 100%;
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    /* Шапка - вертикальная */
+    header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 0;
+    }
+
+    .logo {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .logo h1 {
+        font-size: 1.8rem;
+    }
+
+    .logo-icon {
+        font-size: 2rem;
+    }
+
+    .profile-section {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+
+    .balance-container {
+        width: 100%;
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .daily-bonus {
+        width: 100%;
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .dev-access-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+    }
+
+    /* Секция поделиться */
+    .share-section {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 12px;
+    }
+
+    .share-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .share-links {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    /* Вкладки */
+    .tabs {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding-bottom: 5px;
+    }
+
+    .tab {
+        padding: 12px;
+        font-size: 1rem;
+        text-align: center;
+        border-radius: 8px;
+    }
+
+    /* Карточки игр */
+    .games-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .game-card {
+        padding: 20px;
+    }
+
+    .game-title {
+        font-size: 1.3rem;
+    }
+
+    .game-title h2 {
+        font-size: 1.2rem;
+    }
+
+    /* Управление ставками */
+    .bet-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .bet-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .bet-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1rem;
+    }
+
+    .bet-amount {
+        font-size: 1.6rem;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    /* Слоты */
+    .slots-container {
+        gap: 8px;
+    }
+
+    .slot {
+        width: 85px;
+        height: 85px;
+        font-size: 2.2rem;
+    }
+
+    /* Блэкджек */
+    .blackjack-controls {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .blackjack-btn {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+
+    .card {
+        width: 35px;
+        height: 50px;
+        font-size: 1rem;
+    }
+
+    /* Рулетка */
+    .roulette-wheel {
+        width: 180px;
+        height: 180px;
+    }
+
+    .roulette-bet-type {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    /* Гонки */
+    .race-track {
+        height: 200px;
+    }
+
+    .racer {
+        font-size: 1.5rem;
+        width: 35px;
+        height: 35px;
+    }
+
+    .finish-line {
+        right: 20px;
+    }
+
+    .racer-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Профиль */
+    .profile-info {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .profile-field input,
+    .profile-field select {
+        padding: 14px;
+        font-size: 1rem;
+    }
+
+    .profile-stats {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+    }
+
+    /* Лидерборд */
+    .leaderboard-table {
+        font-size: 0.9rem;
+    }
+
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 12px 8px;
+    }
+
+    .player-cell {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .player-cell span {
+        font-size: 1.2rem !important;
+    }
+
+    /* Помощь */
+    .help-sections {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .help-section {
+        padding: 15px;
+    }
+
+    /* История */
+    .history {
+        padding: 15px;
+    }
+
+    .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    /* Футер */
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        text-align: center;
+    }
+
+    .footer-links {
+        align-items: center;
+    }
+
+    /* Модальное окно */
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+        max-height: 85vh;
+    }
+
+    .dev-input-group {
+        flex-direction: column;
+    }
+
+    .dev-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    /* Онлайн-секция */
+    .online-section {
+        padding: 15px;
+    }
+
+    .player-id {
+        word-break: break-all;
+        font-size: 0.85rem;
+    }
+
+    /* Уведомления */
+    .notification {
+        width: 90%;
+        right: 5%;
+        left: 5%;
+        font-size: 0.95rem;
+    }
+}
+
+/* ========== МАЛЕНЬКИЕ ТЕЛЕФОНЫ (до 380px) ========== */
+@media screen and (max-width: 380px) {
+    .container {
+        padding: 8px;
+    }
+
+    .logo h1 {
+        font-size: 1.5rem;
+    }
+
+    .slot {
+        width: 75px;
+        height: 75px;
+        font-size: 1.8rem;
+    }
+
+    .tabs {
+        grid-template-columns: 1fr;
+    }
+
+    .tab {
+        width: 100%;
+    }
+
+    .roulette-wheel {
+        width: 150px;
+        height: 150px;
+    }
+
+    .race-track {
+        height: 180px;
+    }
+
+    .racer {
+        font-size: 1.3rem;
+    }
+
+    .blackjack-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .racer-options {
+        grid-template-columns: 1fr;
+    }
+
+    .bet-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .leaderboard-table {
+        font-size: 0.8rem;
+    }
+
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 8px 5px;
+    }
+}
+
+/* ========== АЛЬБОМНАЯ ОРИЕНТАЦИЯ НА ТЕЛЕФОНЕ ========== */
+@media screen and (max-width: 900px) and (orientation: landscape) {
+    .container {
+        padding: 10px 20px;
+    }
+
+    header {
+        flex-direction: row;
+        padding: 10px 0;
+    }
+
+    .logo h1 {
+        font-size: 1.8rem;
+    }
+
+    .profile-section {
+        flex-direction: row;
+        width: auto;
+    }
+
+    .games-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .slot {
+        width: 65px;
+        height: 65px;
+        font-size: 1.8rem;
+    }
+
+    .race-track {
+        height: 150px;
+    }
+
+    .modal-content {
+        max-height: 90vh;
+    }
+
+    .tabs {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ========== БОЛЬШИЕ ЭКРАНЫ (4K, Ultra-wide) ========== */
+@media screen and (min-width: 1920px) {
+    .container {
+        max-width: 1600px;
+        padding: 30px 40px;
+    }
+
+    .games-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 40px;
+    }
+
+    .game-card {
+        padding: 35px;
+    }
+
+    .slot {
+        width: 100px;
+        height: 100px;
+        font-size: 3.5rem;
+    }
+
+    .roulette-wheel {
+        width: 300px;
+        height: 300px;
+    }
+
+    .race-track {
+        height: 300px;
+    }
+
+    .logo h1 {
+        font-size: 3rem;
+    }
+
+    .profile-info {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .help-sections {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .card {
+        width: 60px;
+        height: 85px;
+        font-size: 1.6rem;
+    }
+}
+
+/* ========== ТАЧ-ОПТИМИЗАЦИИ ДЛЯ МОБИЛЬНЫХ ========== */
+@media (hover: none) and (pointer: coarse) {
+    .game-card:hover {
+        transform: none;
+    }
+
+    .game-card:active {
+        transform: scale(0.98);
+    }
+
+    .play-btn:hover {
+        transform: none;
+    }
+
+    .play-btn:active {
+        transform: scale(0.95);
+    }
+
+    .bet-btn:hover {
+        background: #0f3460;
+    }
+
+    .bet-btn:active {
+        background: #e94560;
+    }
+
+    .share-link:hover {
+        transform: none;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .share-link:active {
+        transform: scale(0.9);
+    }
+
+    .dev-access-btn:hover {
+        transform: none;
+    }
+
+    .dev-access-btn:active {
+        transform: rotate(90deg);
+    }
+
+    /* Увеличиваем кликабельные области */
+    .bet-btn,
+    .tab,
+    .share-btn,
+    .daily-bonus,
+    .play-btn,
+    .blackjack-btn,
+    .racer-btn,
+    .roulette-bet-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .footer-links a {
+        padding: 12px 0;
+        display: inline-block;
+    }
+}
+
+/* ========== АНИМАЦИИ ДЛЯ МОБИЛЬНЫХ ========== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========== ТЕМНАЯ ТЕМА ДЛЯ OLED ЭКРАНОВ ========== */
+@media (prefers-color-scheme: dark) and (max-width: 767px) {
+    body {
+        background: #0a0a1a;
+    }
+
+    .game-card {
+        background: rgba(0, 0, 0, 0.7);
+    }
+}
+
+/* Остальные стили из вашего исходного файла остаются без изменений */
+/* ... (весь остальной CSS-код, который был до медиа-запросов) ... */
