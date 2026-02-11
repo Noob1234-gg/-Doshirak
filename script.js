@@ -10,6 +10,207 @@ let syncInterval = null;
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ======================
 
+// Добавьте в начало файла script.js, после объявления переменных:
+
+// ======================
+// ОПРЕДЕЛЕНИЕ УСТРОЙСТВА
+// ======================
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 767;
+const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1024;
+const isDesktop = !isMobile && !isTablet;
+
+// Оптимизация для мобильных устройств
+function optimizeForDevice() {
+    if (isMobile) {
+        // Отключаем некоторые анимации на мобильных для производительности
+        document.body.classList.add('mobile-device');
+        
+        // Автоматически скрываем клавиатуру при вводе
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('blur', () => {
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                }, 100);
+            });
+        });
+
+        // Предотвращаем масштабирование на некоторых элементах
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        // Оптимизация для viewport
+        const viewport = document.querySelector('meta[name=viewport]');
+        if (viewport) {
+            viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+        }
+
+        // Уменьшаем количество эффектов для производительности
+        reduceAnimations();
+        
+        // Добавляем поддержку свайпов
+        initSwipeNavigation();
+    }
+
+    if (isTablet) {
+        document.body.classList.add('tablet-device');
+    }
+
+    if (isDesktop) {
+        document.body.classList.add('desktop-device');
+    }
+
+    // Адаптация ставок под устройство
+    adjustBetButtonsForDevice();
+}
+
+// Уменьшение анимаций на мобильных
+function reduceAnimations() {
+    // Убираем анимацию пульсации на мобильных
+    const logoIcon = document.querySelector('.logo-icon');
+    if (logoIcon) {
+        logoIcon.style.animation = 'none';
+    }
+
+    // Уменьшаем сложность анимаций
+    const style = document.createElement('style');
+    style.textContent = `
+        .mobile-device .game-card::before {
+            display: none !important;
+        }
+        .mobile-device .play-btn::after {
+            display: none !important;
+        }
+        .mobile-device .slot.spinning {
+            animation: none !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Инициализация свайп-навигации для мобильных
+function initSwipeNavigation() {
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+        const swipeThreshold = 100;
+        const diff = touchEndX - touchStartX;
+
+        if (Math.abs(diff) > swipeThreshold) {
+            const tabs = document.querySelectorAll('.tab');
+            let activeIndex = Array.from(tabs).findIndex(tab => tab.classList.contains('active'));
+
+            if (diff > 0 && activeIndex > 0) {
+                // Свайп вправо - предыдущая вкладка
+                tabs[activeIndex - 1].click();
+            } else if (diff < 0 && activeIndex < tabs.length - 1) {
+                // Свайп влево - следующая вкладка
+                tabs[activeIndex + 1].click();
+            }
+        }
+    }
+}
+
+// Адаптация кнопок ставок под устройство
+function adjustBetButtonsForDevice() {
+    if (isMobile) {
+        // На мобильных делаем шаг ставки меньше
+        document.querySelectorAll('.bet-btn').forEach(btn => {
+            const change = parseInt(btn.getAttribute('data-change'));
+            if (Math.abs(change) > 20) {
+                btn.setAttribute('data-change', change > 0 ? '20' : '-20');
+            }
+        });
+    }
+}
+
+// Переопределяем функцию showNotification для мобильных
+function showNotification(message, type = 'info') {
+    if (isMobile) {
+        // На мобильных показываем уведомление внизу
+        notification.textContent = message;
+        notification.className = 'notification ' + type;
+        notification.classList.add('show');
+        notification.style.top = 'auto';
+        notification.style.bottom = '20px';
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000);
+    } else {
+        // На десктопе сверху
+        notification.textContent = message;
+        notification.className = 'notification ' + type;
+        notification.classList.add('show');
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000);
+    }
+}
+
+// Улучшенная адаптация для клавиатуры на мобильных
+function setupMobileInputs() {
+    if (isMobile) {
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('focus', () => {
+                // Плавный скролл к инпуту
+                setTimeout(() => {
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
+        });
+    }
+}
+
+// Вызываем оптимизацию при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    // ... существующий код ...
+    
+    // Добавляем определение устройства
+    optimizeForDevice();
+    setupMobileInputs();
+
+    // Обработчик изменения размера окна
+    window.addEventListener('resize', debounce(() => {
+        const wasMobile = isMobile;
+        const newIsMobile = window.innerWidth <= 767;
+        
+        // Переопределяем глобальные переменные
+        window.isMobile = newIsMobile;
+        window.isTablet = window.innerWidth >= 768 && window.innerWidth <= 1024;
+        window.isDesktop = !window.isMobile && !window.isTablet;
+        
+        // Обновляем UI при изменении устройства
+        if (wasMobile !== newIsMobile) {
+            location.reload();
+        }
+    }, 250));
+});
+
+// Функция debounce для оптимизации
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 // Генерация ID игрока
 function generatePlayerId() {
     const id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
