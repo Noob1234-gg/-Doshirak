@@ -11,13 +11,13 @@ let syncInterval = null;
 // ======================
 
 // ======================
-// ОПРЕДЕЛЕНИЕ УСТРОЙСТВА
+// ОПРЕДЕЛЕНИЕ УСТРОЙСТВА - ИСПРАВЛЕНО
 // ======================
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 767;
 const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1024;
 const isDesktop = !isMobile && !isTablet;
 
-// Оптимизация для мобильных устройств
+// Оптимизация для мобильных устройств - ТОЛЬКО ДЛЯ МОБИЛЬНЫХ
 function optimizeForDevice() {
     if (isMobile) {
         document.body.classList.add('mobile-device');
@@ -41,6 +41,7 @@ function optimizeForDevice() {
 
         reduceAnimations();
         initSwipeNavigation();
+        adjustBetButtonsForDevice();
     }
 
     if (isTablet) {
@@ -50,8 +51,6 @@ function optimizeForDevice() {
     if (isDesktop) {
         document.body.classList.add('desktop-device');
     }
-
-    adjustBetButtonsForDevice();
 }
 
 // Уменьшение анимаций на мобильных
@@ -107,47 +106,44 @@ function initSwipeNavigation() {
     }
 }
 
-// Адаптация кнопок ставок под устройство - ИСПРАВЛЕНО
+// Адаптация кнопок ставок - ТОЛЬКО ДЛЯ МОБИЛЬНЫХ
 function adjustBetButtonsForDevice() {
-    if (isMobile) {
-        document.querySelectorAll('.bet-btn').forEach(btn => {
-            const change = parseInt(btn.getAttribute('data-change'));
-            
-            if (Math.abs(change) >= 1000) {
-                btn.style.display = window.innerWidth <= 480 ? 'none' : 'block';
-            }
-            
-            if (Math.abs(change) === 100 && window.innerWidth <= 380) {
-                btn.style.display = 'none';
-            }
-        });
-    }
+    if (!isMobile) return;
+    
+    document.querySelectorAll('.bet-btn').forEach(btn => {
+        const change = parseInt(btn.getAttribute('data-change'));
+        
+        if (Math.abs(change) >= 1000) {
+            btn.style.display = window.innerWidth <= 480 ? 'none' : 'block';
+        }
+        
+        if (Math.abs(change) === 100 && window.innerWidth <= 380) {
+            btn.style.display = 'none';
+        }
+    });
 }
 
-// Переопределяем функцию showNotification для мобильных
+// Уведомления - ИСПРАВЛЕНО (РАБОТАЕТ НА ВСЕХ УСТРОЙСТВАХ)
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
     if (!notification) return;
     
+    notification.textContent = message;
+    notification.className = 'notification ' + type;
+    notification.classList.add('show');
+    
+    // На мобильных показываем снизу
     if (isMobile) {
-        notification.textContent = message;
-        notification.className = 'notification ' + type;
-        notification.classList.add('show');
         notification.style.top = 'auto';
         notification.style.bottom = '20px';
-        
-        setTimeout(() => {
-            notification.classList.remove('show');
-        }, 3000);
     } else {
-        notification.textContent = message;
-        notification.className = 'notification ' + type;
-        notification.classList.add('show');
-        
-        setTimeout(() => {
-            notification.classList.remove('show');
-        }, 3000);
+        notification.style.top = '20px';
+        notification.style.bottom = 'auto';
     }
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
 }
 
 // Улучшенная адаптация для клавиатуры на мобильных
@@ -280,17 +276,21 @@ document.addEventListener('DOMContentLoaded', () => {
     optimizeForDevice();
     setupMobileInputs();
     
+    // Обработчик изменения размера окна
     window.addEventListener('resize', debounce(() => {
+        // Обновляем флаги устройств
         const wasMobile = isMobile;
         const newIsMobile = window.innerWidth <= 767;
         
+        // Переопределяем глобальные переменные
         window.isMobile = newIsMobile;
         window.isTablet = window.innerWidth >= 768 && window.innerWidth <= 1024;
         window.isDesktop = !window.isMobile && !window.isTablet;
         
+        // Обновляем UI при изменении устройства
         if (wasMobile !== newIsMobile) {
             location.reload();
-        } else {
+        } else if (isMobile) {
             adjustBetButtonsForDevice();
         }
     }, 250));
@@ -537,6 +537,7 @@ function checkDailyBonus() {
         dailyBonusButton.innerHTML = '<i class="fas fa-check"></i> Бонус уже получен сегодня';
     } else {
         dailyBonusButton.disabled = false;
+        dailyBonusButton.innerHTML = '<i class="fas fa-gift"></i> Ежедневный бонус';
     }
 }
 
@@ -734,7 +735,8 @@ function playGuess() {
     if (!guessBetElement || !guessResultElement) return;
     
     const bet = parseInt(guessBetElement.textContent);
-    const userGuess = parseInt(document.getElementById('numberGuess')?.value);
+    const numberGuess = document.getElementById('numberGuess');
+    const userGuess = numberGuess ? parseInt(numberGuess.value) : 5;
     
     if (userGuess < 1 || userGuess > 10) {
         guessResultElement.innerHTML = 'Пожалуйста, введите число от 1 до 10!';
@@ -1133,7 +1135,7 @@ function copyGameLink() {
     navigator.clipboard.writeText(gameUrl).then(() => {
         showNotification('Ссылка скопирована в буфер обмена!', 'info');
         playSound('click');
-    }).catch(err => {
+    }).catch(() => {
         const textArea = document.createElement('textarea');
         textArea.value = gameUrl;
         document.body.appendChild(textArea);
@@ -1487,7 +1489,8 @@ function initRoulette() {
     if (playBtn) playBtn.addEventListener('click', playRoulette);
     if (numberBtn) {
         numberBtn.addEventListener('click', () => {
-            const number = parseInt(document.getElementById('rouletteNumber')?.value);
+            const numberInput = document.getElementById('rouletteNumber');
+            const number = numberInput ? parseInt(numberInput.value) : 0;
             if (number >= 0 && number <= 36) {
                 rouletteCurrentBet = { type: 'number', value: number, multiplier: 36 };
                 updateRouletteSelection();
@@ -1766,8 +1769,7 @@ function startRace() {
     }
     
     const finishLine = 280;
-    const racers = [1, 2, 3, 4];
-    const speeds = racers.map(() => Math.random() * 3 + 2);
+    const speeds = [1, 2, 3, 4].map(() => Math.random() * 3 + 2);
     
     let positions = [0, 0, 0, 0];
     let winner = null;
@@ -1908,7 +1910,8 @@ function setupDeveloperEventListeners() {
     
     if (setBalanceBtn) {
         setBalanceBtn.addEventListener('click', () => {
-            const newBalance = parseInt(document.getElementById('devBalance')?.value);
+            const devBalance = document.getElementById('devBalance');
+            const newBalance = devBalance ? parseInt(devBalance.value) : 0;
             if (!isNaN(newBalance) && newBalance >= 0) {
                 balance = newBalance;
                 updateBalance();
