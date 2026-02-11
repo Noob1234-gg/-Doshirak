@@ -2,17 +2,12 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Доширак-Лэнд | Виртуальное казино</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/96/000000/noodles.png">
     <meta name="description" content="Виртуальное казино Доширак-Лэнд - играйте в слоты и угадывайте числа, зарабатывайте дошираки!">
-    <meta property="og:title" content="Доширак-Лэнд | Виртуальное казино">
-    <meta property="og:description" content="Играйте в слоты и угадывайте числа, зарабатывайте дошираки!">
-    <meta property="og:image" content="https://i.ytimg.com/vi/BszNbLvY-ME/maxresdefault.jpg">
-    <meta property="og:url" content="https://doshirak-land.ru">
-    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
     <!-- Модальное окно для режима разработчика -->
@@ -136,15 +131,11 @@
                     <div class="bet-controls">
                         <span>Ставка:</span>
                         <div class="bet-buttons">
-                            <button class="bet-btn" data-change="-1000">-1000</button>
-                            <button class="bet-btn" data-change="-100">-100</button>
-                            <button class="bet-btn" data-change="-10">-10</button>
-                            <button class="bet-btn" data-change="-1">-1</button>
+                            <button class="bet-btn" data-game="slots" data-change="-100">-100</button>
+                            <button class="bet-btn" data-game="slots" data-change="-10">-10</button>
                             <span class="bet-amount" id="slotBet">10</span>
-                            <button class="bet-btn" data-change="1">+1</button>
-                            <button class="bet-btn" data-change="10">+10</button>
-                            <button class="bet-btn" data-change="100">+100</button>
-                            <button class="bet-btn" data-change="1000">+1000</button>
+                            <button class="bet-btn" data-game="slots" data-change="10">+10</button>
+                            <button class="bet-btn" data-game="slots" data-change="100">+100</button>
                         </div>
                     </div>
                     
@@ -173,15 +164,11 @@
                     <div class="bet-controls">
                         <span>Ставка:</span>
                         <div class="bet-buttons">
-                            <button class="bet-btn" data-change="-1000">-1000</button>
-                            <button class="bet-btn" data-change="-100">-100</button>
-                            <button class="bet-btn" data-change="-10">-10</button>
-                            <button class="bet-btn" data-change="-1">-1</button>
-                            <span class="bet-amount" id="slotBet">10</span>
-                            <button class="bet-btn" data-change="1">+1</button>
-                            <button class="bet-btn" data-change="10">+10</button>
-                            <button class="bet-btn" data-change="100">+100</button>
-                            <button class="bet-btn" data-change="1000">+1000</button>
+                            <button class="bet-btn" data-game="guess" data-change="-100">-100</button>
+                            <button class="bet-btn" data-game="guess" data-change="-10">-10</button>
+                            <span class="bet-amount" id="guessBet">10</span>
+                            <button class="bet-btn" data-game="guess" data-change="10">+10</button>
+                            <button class="bet-btn" data-game="guess" data-change="100">+100</button>
                         </div>
                     </div>
                     
@@ -204,20 +191,16 @@
                         <h2>Доширак-Блэкджек</h2>
                     </div>
                     
-                    <p class="game-description">Наберите ближе к 21, чем дилер, но не переборщите! Блэкджек (туз + 10) = 2.5x ставки.</p>
+                    <p class="game-description">Наберите ближе к 21, чем дилер, но не переборщите! Блэкджек = 2.5x ставки.</p>
                     
                     <div class="bet-controls">
                         <span>Ставка:</span>
                         <div class="bet-buttons">
-                            <button class="bet-btn" data-change="-1000">-1000</button>
-                            <button class="bet-btn" data-change="-100">-100</button>
-                            <button class="bet-btn" data-change="-10">-10</button>
-                            <button class="bet-btn" data-change="-1">-1</button>
-                            <span class="bet-amount" id="slotBet">10</span>
-                            <button class="bet-btn" data-change="1">+1</button>
-                            <button class="bet-btn" data-change="10">+10</button>
-                            <button class="bet-btn" data-change="100">+100</button>
-                            <button class="bet-btn" data-change="1000">+1000</button>
+                            <button class="bet-btn" data-game="blackjack" data-change="-100">-100</button>
+                            <button class="bet-btn" data-game="blackjack" data-change="-10">-10</button>
+                            <span class="bet-amount" id="blackjackBet">10</span>
+                            <button class="bet-btn" data-game="blackjack" data-change="10">+10</button>
+                            <button class="bet-btn" data-game="blackjack" data-change="100">+100</button>
                         </div>
                     </div>
                     
@@ -236,9 +219,9 @@
                     </div>
                     
                     <div class="blackjack-controls">
-                        <button class="blackjack-btn" id="blackjackHit">Взять</button>
-                        <button class="blackjack-btn" id="blackjackStand">Оставить</button>
-                        <button class="blackjack-btn" id="blackjackDouble">Удвоить</button>
+                        <button class="blackjack-btn" id="blackjackHit" disabled>Взять</button>
+                        <button class="blackjack-btn" id="blackjackStand" disabled>Оставить</button>
+                        <button class="blackjack-btn" id="blackjackDouble" disabled>Удвоить</button>
                         <button class="blackjack-btn" id="blackjackRestart">Новая игра</button>
                     </div>
                     
@@ -259,15 +242,11 @@
                     <div class="bet-controls">
                         <span>Ставка:</span>
                         <div class="bet-buttons">
-                            <button class="bet-btn" data-change="-1000">-1000</button>
-                            <button class="bet-btn" data-change="-100">-100</button>
-                            <button class="bet-btn" data-change="-10">-10</button>
-                            <button class="bet-btn" data-change="-1">-1</button>
-                            <span class="bet-amount" id="slotBet">10</span>
-                            <button class="bet-btn" data-change="1">+1</button>
-                            <button class="bet-btn" data-change="10">+10</button>
-                            <button class="bet-btn" data-change="100">+100</button>
-                            <button class="bet-btn" data-change="1000">+1000</button>
+                            <button class="bet-btn" data-game="roulette" data-change="-100">-100</button>
+                            <button class="bet-btn" data-game="roulette" data-change="-10">-10</button>
+                            <span class="bet-amount" id="rouletteBet">10</span>
+                            <button class="bet-btn" data-game="roulette" data-change="10">+10</button>
+                            <button class="bet-btn" data-game="roulette" data-change="100">+100</button>
                         </div>
                     </div>
                     
@@ -287,7 +266,7 @@
                             <div class="roulette-number-select">
                                 <label>Выберите число (0-36):</label>
                                 <input type="number" id="rouletteNumber" min="0" max="36" value="0">
-                                <button class="roulette-bet-btn" id="betOnNumber" data-multiplier="36">Ставка на число</button>
+                                <button class="roulette-bet-btn" id="betOnNumber">Ставка на число</button>
                             </div>
                         </div>
                     </div>
@@ -311,15 +290,11 @@
                     <div class="bet-controls">
                         <span>Ставка:</span>
                         <div class="bet-buttons">
-                            <button class="bet-btn" data-change="-1000">-1000</button>
-                            <button class="bet-btn" data-change="-100">-100</button>
-                            <button class="bet-btn" data-change="-10">-10</button>
-                            <button class="bet-btn" data-change="-1">-1</button>
-                            <span class="bet-amount" id="slotBet">10</span>
-                            <button class="bet-btn" data-change="1">+1</button>
-                            <button class="bet-btn" data-change="10">+10</button>
-                            <button class="bet-btn" data-change="100">+100</button>
-                            <button class="bet-btn" data-change="1000">+1000</button>
+                            <button class="bet-btn" data-game="race" data-change="-100">-100</button>
+                            <button class="bet-btn" data-game="race" data-change="-10">-10</button>
+                            <span class="bet-amount" id="raceBet">10</span>
+                            <button class="bet-btn" data-game="race" data-change="10">+10</button>
+                            <button class="bet-btn" data-game="race" data-change="100">+100</button>
                         </div>
                     </div>
                     
@@ -385,12 +360,10 @@
                             <th>Уровень</th>
                         </tr>
                     </thead>
-                    <tbody id="leaderboardBody">
-                        <!-- Таблица будет заполнена через JavaScript -->
-                    </tbody>
+                    <tbody id="leaderboardBody"></tbody>
                 </table>
                 <p class="leaderboard-note">
-                    Чтобы попасть в топ, накапливайте дошираки и играйте регулярно! Топ обновляется каждые 5 минут.
+                    Чтобы попасть в топ, накапливайте дошираки и играйте регулярно!
                 </p>
             </div>
         </div>
@@ -417,9 +390,20 @@
                             <option value="🥷">🥷 Ниндзя</option>
                             <option value="🍜">🍜 Доширак</option>
                             <option value="👑">👑 Король</option>
-                            <option value="🤴">🤴 Принц</option>
                             <option value="🦊">🦊 Лис</option>
                         </select>
+                    </div>
+                    
+                    <!-- Поле для промокода -->
+                    <div class="profile-field" style="grid-column: 1 / -1; margin-top: 20px;">
+                        <label for="promoCode">Промокод:</label>
+                        <div class="dev-input-group" style="max-width: 500px;">
+                            <input type="text" id="promoCode" placeholder="Введите промокод для бонуса">
+                            <button class="dev-btn" id="activatePromo" style="background: #ff9a3c;">Активировать</button>
+                        </div>
+                        <div class="password-hint" style="margin-top: 10px;">
+                            Для получения промокода, запросите его у Разработчика.
+                        </div>
                     </div>
                 </div>
                 
@@ -457,45 +441,25 @@
                         <h3><i class="fas fa-coins"></i> Начало игры</h3>
                         <p>У вас есть начальный баланс 100 дошираков. Вы можете увеличить его, получая ежедневные бонусы или выигрывая в играх.</p>
                     </div>
-                    
                     <div class="help-section">
                         <h3><i class="fas fa-sliders-h"></i> Игра "Слоты"</h3>
                         <p>Сделайте ставку и вращайте слоты. Если выпадут 3 одинаковых символа, вы выиграете сумму в 5 раз больше вашей ставки!</p>
                     </div>
-                    
                     <div class="help-section">
                         <h3><i class="fas fa-dice"></i> Игра "Угадай число"</h3>
                         <p>Выберите число от 1 до 10 и сделайте ставку. Если угадаете загаданное число, получите 5x ставки!</p>
                     </div>
-                    
                     <div class="help-section">
                         <h3><i class="fas fa-club"></i> Игра "Блэкджек"</h3>
                         <p>Наберите ближе к 21, чем дилер, но не перебирайте! Блэкджек (туз + 10) дает 2.5x ставки, обычная победа - 2x ставки.</p>
                     </div>
-                    
                     <div class="help-section">
                         <h3><i class="fas fa-dharmachakra"></i> Игра "Рулетка"</h3>
                         <p>Ставьте на цвет (2x), четность (2x) или конкретное число (36x). Крутите рулетку и проверяйте удачу!</p>
                     </div>
-                    
                     <div class="help-section">
                         <h3><i class="fas fa-flag-checkered"></i> Игра "Гонки"</h3>
                         <p>Сделайте ставку на одного из 4 гонщиков. Если ваш гонщик победит, получите 3x ставки!</p>
-                    </div>
-                    
-                    <div class="help-section">
-                        <h3><i class="fas fa-gift"></i> Ежедневный бонус</h3>
-                        <p>Каждый день вы можете получить бесплатный бонус в 50 дошираков. Не пропускайте!</p>
-                    </div>
-                    
-                    <div class="help-section">
-                        <h3><i class="fas fa-trophy"></i> Рейтинг игроков</h3>
-                        <p>Соревнуйтесь с другими игроками и попадите в топ-10 лучших игроков!</p>
-                    </div>
-                    
-                    <div class="help-section">
-                        <h3><i class="fas fa-mobile-alt"></i> Совместимость</h3>
-                        <p>Игра полностью адаптирована для компьютеров, планшетов и мобильных телефонов.</p>
                     </div>
                 </div>
                 
@@ -503,7 +467,6 @@
                     <h3><i class="fas fa-exclamation-triangle"></i> Важная информация</h3>
                     <p>Доширак-Лэнд — это виртуальное казино для развлечения. Все "дошираки" имеют исключительно игровую ценность.</p>
                     <p>Играйте ответственно! Не рекомендуется для лиц младше 18 лет.</p>
-                    <p>Данные сохраняются в вашем браузере. При очистке кэша данные будут потеряны.</p>
                 </div>
             </div>
         </div>
@@ -511,9 +474,7 @@
         <!-- История игр -->
         <div class="history">
             <h2><i class="fas fa-history"></i> История игр</h2>
-            <div class="history-items" id="historyItems">
-                <!-- История будет добавляться сюда -->
-            </div>
+            <div class="history-items" id="historyItems"></div>
         </div>
         
         <!-- Уведомления -->
@@ -543,48 +504,33 @@
                 <p>© 2026 Доширак-Лэнд. Все права защищены.</p>
                 <p>Играйте ответственно! 18+</p>
             </div>
-
-
-<!-- Онлайн-секция -->
-<div class="online-section">
-    <h3><i class="fas fa-globe"></i> Онлайн-режим</h3>
-    <div class="online-controls">
-        <div class="online-status">
-            <span class="status-offline" style="color: #ff3b30; font-weight: bold;">● Офлайн</span>
-            <span class="status-online" style="color: #4cd964; font-weight: bold; display: none;">● Онлайн</span>
-        </div>
-        <button id="toggleOnline" class="play-btn" style="margin-top: 10px;">
-            Скоро! 
-        </button>
-        <div class="player-id" id="playerIdDisplay" style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; display: none;">
-            <div>Ваш ID для друзей:</div>
-            <div style="font-family: monospace; font-size: 0.9rem; margin: 5px 0;" id="playerId"></div>
-            <button onclick="copyPlayerId()" class="bet-btn" style="margin-top: 5px;">
-                <i class="fas fa-copy"></i> Копировать ID
-            </button>
-        </div>
-    </div>
-    <p style="margin-top: 10px; font-size: 0.9rem; color: #aaa;">
-        Включите онлайн-режим, чтобы соревноваться с друзьями!
-    </p>
-</div>
-
-
+            
+            <!-- Онлайн-секция -->
+            <div class="online-section">
+                <h3><i class="fas fa-globe"></i> Онлайн-режим</h3>
+                <div class="online-controls">
+                    <div class="online-status">
+                        <span class="status-offline" style="color: #ff3b30; font-weight: bold;">● Офлайн</span>
+                        <span class="status-online" style="color: #4cd964; font-weight: bold; display: none;">● Онлайн</span>
+                    </div>
+                    <button id="toggleOnline" class="play-btn" style="margin-top: 10px;">
+                        Включить онлайн-режим
+                    </button>
+                    <div class="player-id" id="playerIdDisplay" style="margin-top: 15px; display: none;">
+                        <div>Ваш ID для друзей:</div>
+                        <div style="font-family: monospace; font-size: 0.9rem; margin: 5px 0;" id="playerId"></div>
+                        <button onclick="window.copyPlayerId()" class="bet-btn" style="margin-top: 5px;">
+                            <i class="fas fa-copy"></i> Копировать ID
+                        </button>
+                    </div>
+                </div>
+                <p style="margin-top: 10px; font-size: 0.9rem; color: #aaa;">
+                    Включите онлайн-режим, чтобы соревноваться с друзьями!
+                </p>
+            </div>
         </footer>
     </div>
 
-    <!-- Скрипты -->
-    <script src="script.js" defer></script>
+    <script src="script.js"></script>
 </body>
-<!-- В файле index.html, в секции профиля, после блока сохранения профиля и перед статистикой: -->
-<div class="profile-field" style="grid-column: 1 / -1; margin-top: 20px;">
-    <label for="promoCode">Промокод:</label>
-    <div class="dev-input-group" style="max-width: 500px;">
-        <input type="text" id="promoCode" placeholder="Введите промокод для бонуса">
-        <button class="dev-btn" id="activatePromo" style="background: #ff9a3c;">Активировать</button>
-    </div>
-    <div class="password-hint" style="margin-top: 10px;">
-        Для получения промокода, запросите его у Разработчика.
-    </div>
-</div>
 </html>
