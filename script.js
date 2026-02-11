@@ -10,8 +10,6 @@ let syncInterval = null;
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ======================
 
-// Добавьте в начало файла script.js, после объявления переменных:
-
 // ======================
 // ОПРЕДЕЛЕНИЕ УСТРОЙСТВА
 // ======================
@@ -22,10 +20,8 @@ const isDesktop = !isMobile && !isTablet;
 // Оптимизация для мобильных устройств
 function optimizeForDevice() {
     if (isMobile) {
-        // Отключаем некоторые анимации на мобильных для производительности
         document.body.classList.add('mobile-device');
         
-        // Автоматически скрываем клавиатуру при вводе
         document.querySelectorAll('input[type="number"]').forEach(input => {
             input.addEventListener('blur', () => {
                 setTimeout(() => {
@@ -34,21 +30,16 @@ function optimizeForDevice() {
             });
         });
 
-        // Предотвращаем масштабирование на некоторых элементах
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         });
 
-        // Оптимизация для viewport
         const viewport = document.querySelector('meta[name=viewport]');
         if (viewport) {
             viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
         }
 
-        // Уменьшаем количество эффектов для производительности
         reduceAnimations();
-        
-        // Добавляем поддержку свайпов
         initSwipeNavigation();
     }
 
@@ -60,19 +51,16 @@ function optimizeForDevice() {
         document.body.classList.add('desktop-device');
     }
 
-    // Адаптация ставок под устройство
     adjustBetButtonsForDevice();
 }
 
 // Уменьшение анимаций на мобильных
 function reduceAnimations() {
-    // Убираем анимацию пульсации на мобильных
     const logoIcon = document.querySelector('.logo-icon');
     if (logoIcon) {
         logoIcon.style.animation = 'none';
     }
 
-    // Уменьшаем сложность анимаций
     const style = document.createElement('style');
     style.textContent = `
         .mobile-device .game-card::before {
@@ -111,24 +99,26 @@ function initSwipeNavigation() {
             let activeIndex = Array.from(tabs).findIndex(tab => tab.classList.contains('active'));
 
             if (diff > 0 && activeIndex > 0) {
-                // Свайп вправо - предыдущая вкладка
                 tabs[activeIndex - 1].click();
             } else if (diff < 0 && activeIndex < tabs.length - 1) {
-                // Свайп влево - следующая вкладка
                 tabs[activeIndex + 1].click();
             }
         }
     }
 }
 
-// Адаптация кнопок ставок под устройство
+// Адаптация кнопок ставок под устройство - ИСПРАВЛЕНО
 function adjustBetButtonsForDevice() {
     if (isMobile) {
-        // На мобильных делаем шаг ставки меньше
         document.querySelectorAll('.bet-btn').forEach(btn => {
             const change = parseInt(btn.getAttribute('data-change'));
-            if (Math.abs(change) > 20) {
-                btn.setAttribute('data-change', change > 0 ? '20' : '-20');
+            
+            if (Math.abs(change) >= 1000) {
+                btn.style.display = window.innerWidth <= 480 ? 'none' : 'block';
+            }
+            
+            if (Math.abs(change) === 100 && window.innerWidth <= 380) {
+                btn.style.display = 'none';
             }
         });
     }
@@ -136,8 +126,10 @@ function adjustBetButtonsForDevice() {
 
 // Переопределяем функцию showNotification для мобильных
 function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    if (!notification) return;
+    
     if (isMobile) {
-        // На мобильных показываем уведомление внизу
         notification.textContent = message;
         notification.className = 'notification ' + type;
         notification.classList.add('show');
@@ -148,7 +140,6 @@ function showNotification(message, type = 'info') {
             notification.classList.remove('show');
         }, 3000);
     } else {
-        // На десктопе сверху
         notification.textContent = message;
         notification.className = 'notification ' + type;
         notification.classList.add('show');
@@ -164,7 +155,6 @@ function setupMobileInputs() {
     if (isMobile) {
         document.querySelectorAll('input[type="number"]').forEach(input => {
             input.addEventListener('focus', () => {
-                // Плавный скролл к инпуту
                 setTimeout(() => {
                     input.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 300);
@@ -172,31 +162,6 @@ function setupMobileInputs() {
         });
     }
 }
-
-// Вызываем оптимизацию при загрузке
-document.addEventListener('DOMContentLoaded', () => {
-    // ... существующий код ...
-    
-    // Добавляем определение устройства
-    optimizeForDevice();
-    setupMobileInputs();
-
-    // Обработчик изменения размера окна
-    window.addEventListener('resize', debounce(() => {
-        const wasMobile = isMobile;
-        const newIsMobile = window.innerWidth <= 767;
-        
-        // Переопределяем глобальные переменные
-        window.isMobile = newIsMobile;
-        window.isTablet = window.innerWidth >= 768 && window.innerWidth <= 1024;
-        window.isDesktop = !window.isMobile && !window.isTablet;
-        
-        // Обновляем UI при изменении устройства
-        if (wasMobile !== newIsMobile) {
-            location.reload();
-        }
-    }, 250));
-});
 
 // Функция debounce для оптимизации
 function debounce(func, wait) {
@@ -218,268 +183,6 @@ function generatePlayerId() {
     return id;
 }
 
-// Включение/выключение онлайн-режима
-function toggleOnlineMode() {
-    onlineMode = !onlineMode;
-    const toggleBtn = document.getElementById('toggleOnline');
-    const statusOffline = document.querySelector('.status-offline');
-    const statusOnline = document.querySelector('.status-online');
-    const playerIdDisplay = document.getElementById('playerIdDisplay');
-    const playerIdSpan = document.getElementById('playerId');
-    
-    if (onlineMode) {
-        // Включаем онлайн
-        toggleBtn.textContent = 'Выключить онлайн-режим';
-        toggleBtn.classList.add('online');
-        statusOffline.style.display = 'none';
-        statusOnline.style.display = 'inline';
-        playerIdDisplay.style.display = 'block';
-        playerIdSpan.textContent = playerId;
-        
-        // Начинаем синхронизацию
-        startSyncing();
-        updateOnlineLeaderboard();
-        
-        // Показываем уведомление
-        showNotification('Онлайн-режим включен! Ваши данные синхронизируются с сервером.');
-    } else {
-        // Выключаем онлайн
-        toggleBtn.textContent = 'Включить онлайн-режим';
-        toggleBtn.classList.remove('online');
-        statusOffline.style.display = 'inline';
-        statusOnline.style.display = 'none';
-        playerIdDisplay.style.display = 'none';
-        
-        // Останавливаем синхронизацию
-        stopSyncing();
-        
-        // Показываем локальный лидерборд
-        displayLeaderboard();
-    }
-}
-
-// Копирование ID
-function copyPlayerId() {
-    navigator.clipboard.writeText(playerId).then(() => {
-        showNotification('ID скопирован! Отправьте другу, чтобы он мог найти вас.');
-    }).catch(() => {
-        // Fallback для старых браузеров
-        const tempInput = document.createElement('input');
-        tempInput.value = playerId;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-        showNotification('ID скопирован!');
-    });
-}
-
-// Уведомления
-function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.innerHTML = `
-        <div style="position: fixed; top: 20px; right: 20px; background: #4cd964; color: white; padding: 15px; border-radius: 8px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-            ${message}
-        </div>
-    `;
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
-}
-
-// ======================
-// РАБОТА С СЕРВЕРОМ
-// ======================
-
-// Начать синхронизацию
-function startSyncing() {
-    syncInterval = setInterval(() => {
-        syncWithServer();
-        updateOnlineLeaderboard();
-    }, 30000); // Каждые 30 секунд
-    
-    // Первая синхронизация
-    syncWithServer();
-}
-
-// Остановить синхронизацию
-function stopSyncing() {
-    if (syncInterval) {
-        clearInterval(syncInterval);
-        syncInterval = null;
-    }
-}
-
-// Синхронизация с сервером
-async function syncWithServer() {
-    if (!onlineMode) return;
-    
-    try {
-        const response = await fetch(`${SERVER_URL}/api/update-player`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                playerId: playerId,
-                name: playerProfile.name,
-                avatar: playerProfile.avatar,
-                balance: balance,
-                stats: playerStats
-            })
-        });
-        
-        if (response.ok) {
-            console.log('✅ Данные синхронизированы');
-        }
-    } catch (error) {
-        console.error('❌ Ошибка синхронизации:', error);
-    }
-}
-
-// Получить онлайн-лидерборд
-async function updateOnlineLeaderboard() {
-    if (!onlineMode) return;
-    
-    try {
-        const response = await fetch(`${SERVER_URL}/api/leaderboard`);
-        const onlinePlayers = await response.json();
-        displayOnlineLeaderboard(onlinePlayers);
-    } catch (error) {
-        console.error('❌ Ошибка загрузки лидерборда:', error);
-    }
-}
-
-// Показать онлайн-лидерборд
-function displayOnlineLeaderboard(onlinePlayers) {
-    leaderboardBody.innerHTML = '';
-    
-    onlinePlayers.forEach((player, index) => {
-        const row = document.createElement('tr');
-        
-        // Ранг
-        let rankClass = '';
-        if (index === 0) rankClass = 'rank-1';
-        else if (index === 1) rankClass = 'rank-2';
-        else if (index === 2) rankClass = 'rank-3';
-        
-        // Уровень
-        let level = 'Новичок';
-        if (player.balance >= 10000) level = 'Легенда';
-        else if (player.balance >= 5000) level = 'Мастер';
-        else if (player.balance >= 2000) level = 'Опытный';
-        else if (player.balance >= 500) level = 'Игрок';
-        
-        // Это текущий игрок?
-        const isCurrentPlayer = player.id === playerId;
-        const playerStyle = isCurrentPlayer ? 'style="color: #ff9a3c; font-weight: bold;"' : '';
-        
-        // Онлайн индикатор
-        const onlineIndicator = player.online ? ' <span class="online-indicator" title="Онлайн">●</span>' : '';
-        
-        row.innerHTML = `
-            <td class="${rankClass}">${index + 1}</td>
-            <td ${playerStyle}>
-                <div class="player-cell">
-                    <span style="font-size: 1.5rem;">${player.avatar}</span>
-                    ${player.name} ${isCurrentPlayer ? '(Вы)' : ''}${onlineIndicator}
-                </div>
-            </td>
-            <td ${playerStyle}>${player.balance}</td>
-            <td>${level}</td>
-        `;
-        
-        leaderboardBody.appendChild(row);
-    });
-}
-
-// Обновить функцию сохранения профиля
-function saveProfile() {
-    const newName = playerNameInput.value.trim() || "Игрок";
-    const newAvatar = playerAvatarSelect.value;
-    
-    // Чит-коды
-    if (newName.toLowerCase() === "богдошираков") {
-        balance += 10000;
-        showNotification('Чит-код активирован! +10000 дошираков!');
-    } else if (newName.toLowerCase() === "топ1") {
-        balance += 50000;
-        showNotification('Мега-чит активирован! +50000 дошираков!');
-    }
-    
-    playerProfile.name = newName;
-    playerProfile.avatar = newAvatar;
-    localStorage.setItem('playerProfile', JSON.stringify(playerProfile));
-    updatePlayerInLeaderboard();
-    
-    // Синхронизация с сервером
-    if (onlineMode) {
-        syncWithServer();
-    }
-    
-    slotResultElement.innerHTML = `<span class="win">Профиль сохранен!</span>`;
-    slotResultElement.className = 'result win';
-    
-    setTimeout(() => switchTab('games'), 1500);
-}
-
-// Обновить функцию displayLeaderboard
-function displayLeaderboard() {
-    if (onlineMode) {
-        updateOnlineLeaderboard();
-    } else {
-        // Локальный лидерборд
-        const top10 = leaderboard.slice(0, 10);
-        leaderboardBody.innerHTML = '';
-        
-        top10.forEach((player, index) => {
-            const row = document.createElement('tr');
-            
-            let rankClass = '';
-            if (index === 0) rankClass = 'rank-1';
-            if (index === 1) rankClass = 'rank-2';
-            if (index === 2) rankClass = 'rank-3';
-            
-            let level = 'Новичок';
-            if (player.balance >= 10000) level = 'Легенда';
-            else if (player.balance >= 5000) level = 'Мастер';
-            else if (player.balance >= 2000) level = 'Опытный';
-            else if (player.balance >= 500) level = 'Игрок';
-            
-            const isCurrentPlayer = player.name === playerProfile.name;
-            const playerStyle = isCurrentPlayer ? 'style="color: #ff9a3c; font-weight: bold;"' : '';
-            
-            row.innerHTML = `
-                <td class="${rankClass}">${index + 1}</td>
-                <td ${playerStyle}>
-                    <div class="player-cell">
-                        <span style="font-size: 1.5rem;">${player.avatar}</span>
-                        ${player.name} ${isCurrentPlayer ? '(Вы)' : ''}
-                    </div>
-                </td>
-                <td ${playerStyle}>${player.balance}</td>
-                <td>${level}</td>
-            `;
-            
-            leaderboardBody.appendChild(row);
-        });
-    }
-}
-
-// Добавить в setupEventListeners
-function setupEventListeners() {
-    // ... существующие слушатели ...
-    
-    // Онлайн-режим
-    document.getElementById('toggleOnline')?.addEventListener('click', toggleOnlineMode);
-}
-
-
-
-
-
-
-
-
-
 // Игровые переменные
 let balance = parseInt(localStorage.getItem('doshirakBalance')) || 100;
 let lastBonusDate = localStorage.getItem('lastBonusDate') || '';
@@ -491,132 +194,10 @@ let playerStats = JSON.parse(localStorage.getItem('playerStats')) || {
     gamesLost: 0
 };
 
-// Добавляем в начало файла script.js, после объявления других переменных:
 let usedPromoCodes = JSON.parse(localStorage.getItem('usedPromoCodes')) || [];
 
-// Добавляем после объявления DOM элементов:
+// Промокоды
 let promoCodeInput, activatePromoBtn;
-
-// В функции cacheDOMElements() добавляем:
-promoCodeInput = document.getElementById('promoCode');
-activatePromoBtn = document.getElementById('activatePromo');
-
-// В функции setupEventListeners() добавляем:
-activatePromoBtn.addEventListener('click', activatePromoCode);
-promoCodeInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        activatePromoCode();
-    }
-});
-
-// Новая функция для активации промокодов:
-function activatePromoCode() {
-    const code = promoCodeInput.value.trim().toUpperCase();
-    
-    if (!code) {
-        showNotification('Введите промокод!', 'error');
-        return;
-    }
-    
-    // Проверяем, не использовался ли уже промокод
-    if (usedPromoCodes.includes(code)) {
-        showNotification('Этот промокод уже был использован!', 'error');
-        promoCodeInput.value = '';
-        return;
-    }
-    
-    // Определяем награду по промокоду
-    const promoRewards = {
-        'YTK455GP': 3000,
-        'CSSTART': 500,
-        'YURICH': 2000,
-        'SUBOTA': 700,
-        'BONUS': 100,
-        'GOLDENKNIGHT': 900
-    };
-    
-    const reward = promoRewards[code];
-    
-    if (reward) {
-        // Активируем промокод
-        balance += reward;
-        updateBalance();
-        
-        // Добавляем в использованные
-        usedPromoCodes.push(code);
-        localStorage.setItem('usedPromoCodes', JSON.stringify(usedPromoCodes));
-        
-        // Показываем уведомление
-        showNotification(`Промокод активирован! +${reward} дошираков`, 'info');
-        
-        // Добавляем в историю
-        addToHistory('Промокод', `+${reward}`, true);
-        
-        // Показываем результат
-        document.querySelector('#profile-tab .result')?.remove();
-        
-        const resultDiv = document.createElement('div');
-        resultDiv.className = 'result win';
-        resultDiv.innerHTML = `Промокод "${code}" активирован! <span class="win">+${reward} дошираков!</span>`;
-        resultDiv.style.marginTop = '20px';
-        resultDiv.style.marginBottom = '30px';
-        
-        const profileContent = document.querySelector('.profile-content');
-        const saveBtn = document.getElementById('saveProfile');
-        profileContent.insertBefore(resultDiv, saveBtn.nextSibling);
-        
-        // Воспроизводим звук
-        playSound('win');
-        
-        // Удаляем сообщение через 5 секунд
-        setTimeout(() => {
-            if (resultDiv.parentNode) {
-                resultDiv.style.opacity = '0';
-                resultDiv.style.transition = 'opacity 0.5s';
-                setTimeout(() => {
-                    if (resultDiv.parentNode) {
-                        resultDiv.parentNode.removeChild(resultDiv);
-                    }
-                }, 500);
-            }
-        }, 5000);
-        
-    } else {
-        showNotification('Неверный промокод!', 'error');
-    }
-    
-    promoCodeInput.value = '';
-}
-
-// Для режима разработчика можно добавить функцию для генерации промокодов
-// Добавляем в initDeveloperMode() новую кнопку:
-/*
-const generatePromoBtn = document.createElement('button');
-generatePromoBtn.className = 'dev-btn';
-generatePromoBtn.textContent = 'Сгенерировать промокод';
-generatePromoBtn.addEventListener('click', generatePromoCode);
-document.querySelector('.dev-section:nth-child(2) .dev-buttons').appendChild(generatePromoBtn);
-*/
-
-// Функция генерации промокода для разработчика
-function generatePromoCode() {
-    if (!isDeveloperMode) return;
-    
-    const prefix = ['DOSH', 'NOOD', 'RAME', 'BONU', 'LUCK', 'GIFT', 'WINS', 'PLAY', 'GAME'];
-    const suffix = ['100', '250', '500', '750', '888', '999', '1000'];
-    
-    const randomPrefix = prefix[Math.floor(Math.random() * prefix.length)];
-    const randomSuffix = suffix[Math.floor(Math.random() * suffix.length)];
-    const newCode = randomPrefix + randomSuffix;
-    
-    // Показываем промокод
-    showDeveloperMessage(`Новый промокод: ${newCode} (${randomSuffix} дошираков)`);
-    
-    // Можно скопировать в буфер обмена
-    navigator.clipboard.writeText(newCode).then(() => {
-        showNotification(`Промокод ${newCode} скопирован!`, 'info');
-    });
-}
 
 // Профиль игрока
 let playerProfile = JSON.parse(localStorage.getItem('playerProfile')) || {
@@ -632,7 +213,17 @@ let lastLeaderboardUpdate = localStorage.getItem('lastLeaderboardUpdate') || 0;
 let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || generateInitialLeaderboard();
 
 // Режим разработчика
-const DEVELOPER_PASSWORD = "DS9O-21K1-N8WW-5LU0";
+const DEVELOPER_PASSWORDS = {
+    FULL: "RK9L3M-X8Q4N2-VB6C1X-PL5S7W",
+    LIMITED: "4F6H8J-1A3C5E-7G9I2K-4M6N8P"
+};
+
+const ACCESS_LEVELS = {
+    FULL: 'full',
+    LIMITED: 'limited'
+};
+
+let currentAccessLevel = null;
 let isDeveloperMode = false;
 
 // DOM элементы
@@ -677,33 +268,46 @@ function generateInitialLeaderboard() {
     ].sort((a, b) => b.balance - a.balance).slice(0, 10);
 }
 
-// Инициализация при загрузке DOM
+// ======================
+// ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ - ИСПРАВЛЕНО
+// ======================
 document.addEventListener('DOMContentLoaded', () => {
-    // Кэшируем DOM элементы для производительности
     cacheDOMElements();
-    
-    // Инициализация приложения
     initApp();
-    
-    // Настройка слушателей событий
     setupEventListeners();
-    
-    // Инициализация режима разработчика
     initDeveloperMode();
-    
-    // Инициализация игр
     initNewGames();
+    optimizeForDevice();
+    setupMobileInputs();
+    
+    window.addEventListener('resize', debounce(() => {
+        const wasMobile = isMobile;
+        const newIsMobile = window.innerWidth <= 767;
+        
+        window.isMobile = newIsMobile;
+        window.isTablet = window.innerWidth >= 768 && window.innerWidth <= 1024;
+        window.isDesktop = !window.isMobile && !window.isTablet;
+        
+        if (wasMobile !== newIsMobile) {
+            location.reload();
+        } else {
+            adjustBetButtonsForDevice();
+        }
+    }, 250));
 });
 
-// Кэширование DOM элементов
+// ======================
+// КЭШИРОВАНИЕ DOM ЭЛЕМЕНТОВ - ИСПРАВЛЕНО
+// ======================
 function cacheDOMElements() {
     balanceElement = document.getElementById('balance');
     dailyBonusButton = document.getElementById('dailyBonus');
-    slotBetElement = document.getElementById('slotBet');
-    guessBetElement = document.getElementById('guessBet');
-    blackjackBetElement = document.getElementById('blackjackBet');
-    rouletteBetElement = document.getElementById('rouletteBet');
-    raceBetElement = document.getElementById('raceBet');
+    
+    slotBetElement = document.getElementById('slotBetAmount');
+    guessBetElement = document.getElementById('guessBetAmount');
+    blackjackBetElement = document.getElementById('blackjackBetAmount');
+    rouletteBetElement = document.getElementById('rouletteBetAmount');
+    raceBetElement = document.getElementById('raceBetAmount');
     
     slotResultElement = document.getElementById('slotResult');
     guessResultElement = document.getElementById('guessResult');
@@ -717,241 +321,19 @@ function cacheDOMElements() {
     leaderboardBody = document.getElementById('leaderboardBody');
     leaderboardUpdateElement = document.getElementById('leaderboardUpdate');
     
-    // Элементы статистики
     totalGamesElement = document.getElementById('totalGames');
     gamesWonElement = document.getElementById('gamesWon');
     gamesLostElement = document.getElementById('gamesLost');
     winRateElement = document.getElementById('winRate');
     
-    // Элементы для общего доступа
     shareBtn = document.getElementById('shareBtn');
     shareLinks = document.getElementById('shareLinks');
     copyLinkBtn = document.getElementById('copyLinkBtn');
     
-    // Уведомления
     notification = document.getElementById('notification');
-}
-
-// Инициализация новых игр
-function initNewGames() {
-    // Инициализация блэкджека
-    initBlackjack();
     
-    // Инициализация рулетки
-    initRoulette();
-    
-    // Инициализация гонок
-    initRace();
-}
-
-// Инициализация режима разработчика
-function initDeveloperMode() {
-    // Элементы режима разработчика
-    devModal = document.getElementById('devModal');
-    devPasswordInput = document.getElementById('devPassword');
-    devControls = document.querySelector('.dev-controls');
-    devMessage = document.getElementById('devMessage');
-    devAccessBtn = document.getElementById('devAccessBtn');
-    closeDevModal = document.getElementById('closeDevModal');
-    submitDevPassword = document.getElementById('submitDevPassword');
-    exitDevMode = document.getElementById('exitDevMode');
-    
-    // Кнопки управления
-    setBalanceBtn = document.getElementById('setBalance');
-    addBalanceBtn = document.getElementById('addBalance');
-    resetBalanceBtn = document.getElementById('resetBalance');
-    clearHistoryBtn = document.getElementById('clearHistory');
-    clearAllDataBtn = document.getElementById('clearAllData');
-    testWinSlotsBtn = document.getElementById('testWinSlots');
-    testWinGuessBtn = document.getElementById('testWinGuess');
-    testWinBlackjackBtn = document.getElementById('testWinBlackjack');
-    testWinRouletteBtn = document.getElementById('testWinRoulette');
-    
-    // Настройка обработчиков событий
-    setupDeveloperEventListeners();
-}
-
-// Настройка обработчиков событий для режима разработчика
-function setupDeveloperEventListeners() {
-    // Открытие модального окна
-    devAccessBtn.addEventListener('click', () => {
-        devModal.style.display = 'flex';
-        devPasswordInput.focus();
-    });
-    
-    // Закрытие модального окна
-    closeDevModal.addEventListener('click', closeDeveloperModal);
-    
-    // Ввод пароля
-    submitDevPassword.addEventListener('click', checkDeveloperPassword);
-    
-    // Выход из режима разработчика
-    exitDevMode.addEventListener('click', exitDeveloperMode);
-    
-    // Управление балансом
-    setBalanceBtn.addEventListener('click', () => {
-        const newBalance = parseInt(document.getElementById('devBalance').value);
-        if (!isNaN(newBalance) && newBalance >= 0) {
-            balance = newBalance;
-            updateBalance();
-            showDeveloperMessage(`Баланс установлен: ${newBalance} дошираков`);
-        }
-    });
-    
-    addBalanceBtn.addEventListener('click', () => {
-        balance += 1000;
-        updateBalance();
-        showDeveloperMessage(`Добавлено 1000 дошираков. Новый баланс: ${balance}`);
-    });
-    
-    resetBalanceBtn.addEventListener('click', () => {
-        balance = 100;
-        updateBalance();
-        showDeveloperMessage('Баланс сброшен к начальному значению: 100 дошираков');
-    });
-    
-    // Очистка данных
-    clearHistoryBtn.addEventListener('click', () => {
-        gameHistory = [];
-        localStorage.removeItem('gameHistory');
-        updateGameHistory();
-        showDeveloperMessage('История игр очищена');
-    });
-    
-    clearAllDataBtn.addEventListener('click', () => {
-        if (confirm('Вы уверены? Это удалит все данные игры.')) {
-            localStorage.clear();
-            location.reload();
-        }
-    });
-    
-    // Тестирование игр
-    testWinSlotsBtn.addEventListener('click', () => {
-        // Имитация выигрыша в слотах
-        const bet = 10;
-        const winAmount = bet * 5;
-        balance += winAmount;
-        updateBalance();
-        
-        slotResultElement.innerHTML = `ТЕСТ: ПОБЕДА! 3 символа 🍜! <span class="win">+${winAmount} дошираков!</span>`;
-        slotResultElement.className = 'result win';
-        
-        addToHistory('Тест: Слоты', `+${winAmount}`, true);
-        showDeveloperMessage(`Тест победы в слотах выполнен. +${winAmount} дошираков`);
-    });
-    
-    testWinGuessBtn.addEventListener('click', () => {
-        // Имитация выигрыша в угадайке
-        const bet = 10;
-        const winAmount = bet * 5;
-        balance += winAmount;
-        updateBalance();
-        
-        guessResultElement.innerHTML = `ТЕСТ: ПОБЕДА! Вы угадали число! <span class="win">+${winAmount} дошираков!</span>`;
-        guessResultElement.className = 'result win';
-        
-        addToHistory('Тест: Угадай число', `+${winAmount}`, true);
-        showDeveloperMessage(`Тест победы в угадайке выполнен. +${winAmount} дошираков`);
-    });
-    
-    testWinBlackjackBtn.addEventListener('click', () => {
-        // Имитация выигрыша в блэкджеке
-        const bet = 10;
-        const winAmount = bet * 2;
-        balance += winAmount;
-        updateBalance();
-        
-        blackjackResultElement.innerHTML = `ТЕСТ: ПОБЕДА в блэкджеке! <span class="win">+${winAmount} дошираков!</span>`;
-        blackjackResultElement.className = 'result win';
-        
-        addToHistory('Тест: Блэкджек', `+${winAmount}`, true);
-        showDeveloperMessage(`Тест победы в блэкджеке выполнен. +${winAmount} дошираков`);
-    });
-    
-    testWinRouletteBtn.addEventListener('click', () => {
-        // Имитация выигрыша в рулетке
-        const bet = 10;
-        const winAmount = bet * 36;
-        balance += winAmount;
-        updateBalance();
-        
-        rouletteResultElement.innerHTML = `ТЕСТ: ПОБЕДА в рулетке! <span class="win">+${winAmount} дошираков!</span>`;
-        rouletteResultElement.className = 'result win';
-        
-        addToHistory('Тест: Рулетка', `+${winAmount}`, true);
-        showDeveloperMessage(`Тест победы в рулетке выполнен. +${winAmount} дошираков`);
-    });
-    
-    // Закрытие по клику вне модального окна
-    devModal.addEventListener('click', (e) => {
-        if (e.target === devModal) {
-            closeDeveloperModal();
-        }
-    });
-    
-    // Ввод пароля по Enter
-    devPasswordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            checkDeveloperPassword();
-        }
-    });
-}
-
-// Проверка пароля разработчика
-function checkDeveloperPassword() {
-    const password = devPasswordInput.value.trim();
-    
-    if (password === DEVELOPER_PASSWORD) {
-        isDeveloperMode = true;
-        devControls.style.display = 'block';
-        submitDevPassword.style.display = 'none';
-        exitDevMode.style.display = 'inline-block';
-        devPasswordInput.style.display = 'none';
-        showDeveloperMessage('Режим разработчика активирован');
-        playSound('win');
-    } else {
-        showDeveloperMessage('Неверный пароль', true);
-        devPasswordInput.value = '';
-        devPasswordInput.focus();
-        playSound('lose');
-    }
-}
-
-// Закрытие модального окна разработчика
-function closeDeveloperModal() {
-    devModal.style.display = 'none';
-    resetDeveloperModal();
-}
-
-// Сброс модального окна разработчика
-function resetDeveloperModal() {
-    devPasswordInput.value = '';
-    devPasswordInput.style.display = 'block';
-    devControls.style.display = 'none';
-    submitDevPassword.style.display = 'inline-block';
-    exitDevMode.style.display = 'none';
-    devMessage.textContent = '';
-    isDeveloperMode = false;
-}
-
-// Выход из режима разработчика
-function exitDeveloperMode() {
-    resetDeveloperModal();
-    closeDeveloperModal();
-    showNotification('Режим разработчика деактивирован', 'info');
-}
-
-// Показать сообщение в режиме разработчика
-function showDeveloperMessage(message, isError = false) {
-    devMessage.textContent = message;
-    devMessage.style.color = isError ? '#ff3b30' : '#4cd964';
-    devMessage.style.display = 'block';
-    
-    if (!isError) {
-        setTimeout(() => {
-            devMessage.style.display = 'none';
-        }, 3000);
-    }
+    promoCodeInput = document.getElementById('promoCode');
+    activatePromoBtn = document.getElementById('activatePromo');
 }
 
 // Инициализация приложения
@@ -965,28 +347,28 @@ function initApp() {
     setupTabs();
 }
 
-// Настройка слушателей событий
+// ======================
+// НАСТРОЙКА СЛУШАТЕЛЕЙ СОБЫТИЙ - ИСПРАВЛЕНО
+// ======================
 function setupEventListeners() {
-    // Настройка кнопок изменения ставок
     document.querySelectorAll('.bet-btn').forEach(button => {
         button.addEventListener('click', handleBetChange);
     });
     
-    // Игры
-    document.getElementById('playSlots').addEventListener('click', playSlots);
-    document.getElementById('playGuess').addEventListener('click', playGuess);
+    const playSlotsBtn = document.getElementById('playSlots');
+    if (playSlotsBtn) playSlotsBtn.addEventListener('click', playSlots);
     
-    // Ежедневный бонус
-    dailyBonusButton.addEventListener('click', claimDailyBonus);
+    const playGuessBtn = document.getElementById('playGuess');
+    if (playGuessBtn) playGuessBtn.addEventListener('click', playGuess);
     
-    // Сохранение профиля
-    document.getElementById('saveProfile').addEventListener('click', saveProfile);
+    if (dailyBonusButton) dailyBonusButton.addEventListener('click', claimDailyBonus);
     
-    // Общий доступ
-    shareBtn.addEventListener('click', toggleShareLinks);
-    copyLinkBtn.addEventListener('click', copyGameLink);
+    const saveProfileBtn = document.getElementById('saveProfile');
+    if (saveProfileBtn) saveProfileBtn.addEventListener('click', saveProfile);
     
-    // Настройка ссылок для общего доступа
+    if (shareBtn) shareBtn.addEventListener('click', toggleShareLinks);
+    if (copyLinkBtn) copyLinkBtn.addEventListener('click', copyGameLink);
+    
     document.querySelectorAll('.share-link').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -994,7 +376,6 @@ function setupEventListeners() {
         });
     });
     
-    // Быстрые ссылки в футере
     document.querySelectorAll('.footer-links a').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -1002,16 +383,36 @@ function setupEventListeners() {
             switchTab(tabId);
         });
     });
+    
+    const toggleOnlineBtn = document.getElementById('toggleOnline');
+    if (toggleOnlineBtn) {
+        toggleOnlineBtn.addEventListener('click', toggleOnlineMode);
+    }
+    
+    if (activatePromoBtn) {
+        activatePromoBtn.addEventListener('click', activatePromoCode);
+    }
+    if (promoCodeInput) {
+        promoCodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                activatePromoCode();
+            }
+        });
+    }
 }
 
-// Обработка изменения ставки
+// ======================
+// ОБРАБОТКА ИЗМЕНЕНИЯ СТАВКИ - ИСПРАВЛЕНО
+// ======================
 function handleBetChange() {
     const change = parseInt(this.getAttribute('data-change'));
-    const betElement = this.closest('.game-card').querySelector('.bet-amount');
+    const betElement = this.closest('.bet-controls')?.querySelector('.bet-amount');
+    
+    if (!betElement) return;
+    
     const currentBet = parseInt(betElement.textContent);
     const newBet = currentBet + change;
     
-    // Минимальная ставка 5, максимальная 1000000
     if (newBet >= 5 && newBet <= 1000000) {
         betElement.textContent = newBet;
         playSound('click');
@@ -1032,7 +433,6 @@ function setupTabs() {
 
 // Переключение вкладок
 function switchTab(tabId) {
-    // Убираем активный класс у всех вкладок
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.remove('active');
     });
@@ -1041,11 +441,12 @@ function switchTab(tabId) {
         content.classList.remove('active');
     });
     
-    // Активируем выбранную вкладку
-    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-    document.getElementById(`${tabId}-tab`).classList.add('active');
+    const activeTab = document.querySelector(`[data-tab="${tabId}"]`);
+    const activeContent = document.getElementById(`${tabId}-tab`);
     
-    // Обновляем лидерборд при переключении на его вкладку
+    if (activeTab) activeTab.classList.add('active');
+    if (activeContent) activeContent.classList.add('active');
+    
     if (tabId === 'leaderboard') {
         checkLeaderboardUpdate();
     }
@@ -1053,10 +454,10 @@ function switchTab(tabId) {
 
 // Обновление баланса
 function updateBalance() {
-    balanceElement.textContent = balance;
+    if (balanceElement) {
+        balanceElement.textContent = balance;
+    }
     localStorage.setItem('doshirakBalance', balance);
-    
-    // Обновляем профиль в лидерборде
     updatePlayerInLeaderboard();
 }
 
@@ -1075,10 +476,8 @@ function updatePlayerInLeaderboard() {
         });
     }
     
-    // Сортируем лидерборд
     leaderboard.sort((a, b) => b.balance - a.balance);
     
-    // Ограничиваем топ-10
     if (leaderboard.length > 10) {
         leaderboard = leaderboard.slice(0, 10);
     }
@@ -1091,53 +490,48 @@ function checkLeaderboardUpdate() {
     const now = Date.now();
     const fiveMinutes = 5 * 60 * 1000;
     
-    // Если с последнего обновления прошло больше 5 минут
     if (now - lastLeaderboardUpdate > fiveMinutes) {
         updateLeaderboardWithCurrentData();
         lastLeaderboardUpdate = now;
         localStorage.setItem('lastLeaderboardUpdate', lastLeaderboardUpdate);
         
-        // Обновляем время последнего обновления
         const updateTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        leaderboardUpdateElement.textContent = `Обновлено в ${updateTime}`;
+        if (leaderboardUpdateElement) {
+            leaderboardUpdateElement.textContent = `Обновлено в ${updateTime}`;
+        }
     } else {
-        // Показываем, когда было обновлено
         const lastUpdateTime = new Date(parseInt(lastLeaderboardUpdate)).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        leaderboardUpdateElement.textContent = `Обновлено в ${lastUpdateTime}`;
+        if (leaderboardUpdateElement) {
+            leaderboardUpdateElement.textContent = `Обновлено в ${lastUpdateTime}`;
+        }
     }
     
-    // Всегда показываем актуальные данные при открытии вкладки
     displayLeaderboard();
 }
 
 // Обновление лидерборда текущими данными
 function updateLeaderboardWithCurrentData() {
-    // Обновляем текущего игрока в лидерборде
     updatePlayerInLeaderboard();
     
-    // Добавляем немного случайности к балансам других игроков для реалистичности
     leaderboard.forEach((player) => {
         if (player.name !== playerProfile.name) {
-            // Изменяем баланс случайным образом (+/- до 15%)
             const changePercent = (Math.random() * 0.3) - 0.15;
             const change = Math.round(player.balance * changePercent);
             player.balance += change;
             
-            // Гарантируем, что баланс не станет отрицательным и не будет слишком большим
             if (player.balance < 100) player.balance = 100 + Math.floor(Math.random() * 1000);
             if (player.balance > 50000) player.balance = 50000;
         }
     });
     
-    // Сортируем по балансу
     leaderboard.sort((a, b) => b.balance - a.balance);
-    
-    // Сохраняем обновленный лидерборд
     localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
 }
 
 // Проверка ежедневного бонуса
 function checkDailyBonus() {
+    if (!dailyBonusButton) return;
+    
     if (lastBonusDate === today) {
         dailyBonusButton.disabled = true;
         dailyBonusButton.innerHTML = '<i class="fas fa-check"></i> Бонус уже получен сегодня';
@@ -1156,25 +550,26 @@ function claimDailyBonus() {
     updateBalance();
     checkDailyBonus();
     
-    // Добавляем запись в историю
     addToHistory('Ежедневный бонус', `+${bonusAmount}`, true);
     
-    // Показываем сообщение
-    slotResultElement.innerHTML = `Вы получили ежедневный бонус: <span class="win">+${bonusAmount} дошираков!</span>`;
-    slotResultElement.className = 'result win';
+    if (slotResultElement) {
+        slotResultElement.innerHTML = `Вы получили ежедневный бонус: <span class="win">+${bonusAmount} дошираков!</span>`;
+        slotResultElement.className = 'result win';
+    }
     
-    // Воспроизводим звук
     playSound('win');
-    
-    // Показываем уведомление
     showNotification(`Получен ежедневный бонус: +${bonusAmount} дошираков!`, 'info');
-    
-    // Обновляем статистику
     updateStats();
 }
 
-// Игра в слоты (оставлена без изменений, так как она уже есть)
+// ======================
+// ИГРЫ
+// ======================
+
+// Игра в слоты
 function playSlots() {
+    if (!slotBetElement || !slotResultElement) return;
+    
     const bet = parseInt(slotBetElement.textContent);
     const playButton = document.getElementById('playSlots');
     
@@ -1185,8 +580,10 @@ function playSlots() {
         return;
     }
     
-    playButton.disabled = true;
-    playButton.textContent = 'Вращение...';
+    if (playButton) {
+        playButton.disabled = true;
+        playButton.textContent = 'Вращение...';
+    }
     
     balance -= bet;
     updateBalance();
@@ -1197,22 +594,21 @@ function playSlots() {
         document.getElementById('slot3')
     ];
     
+    if (!slots[0] || !slots[1] || !slots[2]) return;
+    
     const allSymbols = ['🍜', '🥤', '🍥', '🎲', '💰'];
     let firstSymbol = null;
     let secondSymbol = null;
     
-    // Массивы для каждого слота
     const slot1Symbols = ['🍜', '🥤', '🍥', '🎲', '💰'];
     const slot2Symbols = ['n', '🍜', 'n', '🥤', 'n', '🍥', 'n', '🎲', 'n', '💰'];
     const slot3Symbols = ['n', '🍜', 'n', '🥤', 'n', '🍥', 'n', '🎲', 'n', '💰'];
     
-    // Воспроизводим звук вращения
     playSound('spin');
     
-    // Запускаем вращение всех слотов одновременно
     let spinInterval = setInterval(() => {
         slots.forEach(slot => {
-            if (!slot.classList.contains('stopped')) {
+            if (slot && !slot.classList.contains('stopped')) {
                 const randomSymbol = allSymbols[Math.floor(Math.random() * allSymbols.length)];
                 slot.textContent = randomSymbol;
                 slot.classList.add('spinning');
@@ -1220,21 +616,20 @@ function playSlots() {
         });
     }, 100);
     
-    // Останавливаем слоты по очереди
     setTimeout(() => {
         clearInterval(spinInterval);
         
-        // Первый слот
         const slot1 = slots[0];
-        firstSymbol = slot1Symbols[Math.floor(Math.random() * slot1Symbols.length)];
-        slot1.textContent = firstSymbol;
-        slot1.classList.remove('spinning');
-        slot1.classList.add('stopped');
+        if (slot1) {
+            firstSymbol = slot1Symbols[Math.floor(Math.random() * slot1Symbols.length)];
+            slot1.textContent = firstSymbol;
+            slot1.classList.remove('spinning');
+            slot1.classList.add('stopped');
+        }
         
-        // Запускаем вращение оставшихся слотов
         spinInterval = setInterval(() => {
             slots.slice(1).forEach(slot => {
-                if (!slot.classList.contains('stopped')) {
+                if (slot && !slot.classList.contains('stopped')) {
                     const randomSymbol = allSymbols[Math.floor(Math.random() * allSymbols.length)];
                     slot.textContent = randomSymbol;
                     slot.classList.add('spinning');
@@ -1242,64 +637,66 @@ function playSlots() {
             });
         }, 100);
         
-        // Второй слот через 1 секунду
         setTimeout(() => {
             clearInterval(spinInterval);
             
             const slot2 = slots[1];
-            const slot2Options = slot2Symbols.map(symbol => symbol === 'n' ? firstSymbol : symbol);
-            secondSymbol = slot2Options[Math.floor(Math.random() * slot2Options.length)];
-            slot2.textContent = secondSymbol;
-            slot2.classList.remove('spinning');
-            slot2.classList.add('stopped');
+            if (slot2) {
+                const slot2Options = slot2Symbols.map(symbol => symbol === 'n' ? firstSymbol : symbol);
+                secondSymbol = slot2Options[Math.floor(Math.random() * slot2Options.length)];
+                slot2.textContent = secondSymbol;
+                slot2.classList.remove('spinning');
+                slot2.classList.add('stopped');
+            }
             
-            // Запускаем вращение последнего слота
             spinInterval = setInterval(() => {
                 const slot3 = slots[2];
-                if (!slot3.classList.contains('stopped')) {
+                if (slot3 && !slot3.classList.contains('stopped')) {
                     const randomSymbol = allSymbols[Math.floor(Math.random() * allSymbols.length)];
                     slot3.textContent = randomSymbol;
                     slot3.classList.add('spinning');
                 }
             }, 100);
             
-            // Третий слот через еще 1 секунду
             setTimeout(() => {
                 clearInterval(spinInterval);
                 
                 const slot3 = slots[2];
-                const slot3Options = slot3Symbols.map(symbol => symbol === 'n' ? firstSymbol : symbol);
-                const thirdSymbol = slot3Options[Math.floor(Math.random() * slot3Options.length)];
-                slot3.textContent = thirdSymbol;
-                slot3.classList.remove('spinning');
-                slot3.classList.add('stopped');
-                
-                // Проверяем результат через 0.5 секунды
-                setTimeout(() => {
-                    checkSlotResult(slots, [firstSymbol, secondSymbol, thirdSymbol], bet);
+                if (slot3) {
+                    const slot3Options = slot3Symbols.map(symbol => symbol === 'n' ? firstSymbol : symbol);
+                    const thirdSymbol = slot3Options[Math.floor(Math.random() * slot3Options.length)];
+                    slot3.textContent = thirdSymbol;
+                    slot3.classList.remove('spinning');
+                    slot3.classList.add('stopped');
                     
-                    // Сбрасываем состояние слотов
                     setTimeout(() => {
-                        slots.forEach(slot => {
-                            slot.classList.remove('stopped', 'spinning', 'winning');
-                        });
-                        playButton.disabled = false;
-                        playButton.textContent = 'Вращать слоты';
-                    }, 3000);
-                }, 500);
-                
+                        checkSlotResult(slots, [firstSymbol, secondSymbol, thirdSymbol], bet);
+                        
+                        setTimeout(() => {
+                            slots.forEach(slot => {
+                                if (slot) {
+                                    slot.classList.remove('stopped', 'spinning', 'winning');
+                                }
+                            });
+                            if (playButton) {
+                                playButton.disabled = false;
+                                playButton.textContent = 'Вращать слоты';
+                            }
+                        }, 3000);
+                    }, 500);
+                }
             }, 1000);
-            
         }, 1000);
-        
     }, 1000);
     
     playerStats.totalGames += 1;
     updateStats();
 }
 
-// Проверка результата слотов (оставлена без изменений)
+// Проверка результата слотов
 function checkSlotResult(slots, results, bet) {
+    if (!slotResultElement) return;
+    
     const allEqual = results[0] === results[1] && results[1] === results[2];
     
     if (allEqual) {
@@ -1307,9 +704,8 @@ function checkSlotResult(slots, results, bet) {
         balance += winAmount;
         updateBalance();
         
-        // Анимация выигрыша
         slots.forEach(slot => {
-            slot.classList.add('winning');
+            if (slot) slot.classList.add('winning');
         });
         
         slotResultElement.innerHTML = `ПОБЕДА! 3 символа ${results[0]}! <span class="win">+${winAmount} дошираков!</span>`;
@@ -1318,10 +714,7 @@ function checkSlotResult(slots, results, bet) {
         addToHistory('Слоты', `+${winAmount}`, true);
         playerStats.gamesWon += 1;
         
-        // Воспроизводим звук победы
         playSound('win');
-        
-        // Показываем уведомление
         showNotification(`Выигрыш: +${winAmount} дошираков!`, 'info');
     } else {
         slotResultElement.innerHTML = `Повезет в следующий раз! <span class="lose">-${bet} дошираков</span>`;
@@ -1330,19 +723,19 @@ function checkSlotResult(slots, results, bet) {
         addToHistory('Слоты', `-${bet}`, false);
         playerStats.gamesLost += 1;
         
-        // Воспроизводим звук поражения
         playSound('lose');
     }
     
     updateStats();
 }
 
-// Игра "Угадай число" (оставлена без изменений, так как она уже есть)
+// Игра "Угадай число"
 function playGuess() {
-    const bet = parseInt(guessBetElement.textContent);
-    const userGuess = parseInt(document.getElementById('numberGuess').value);
+    if (!guessBetElement || !guessResultElement) return;
     
-    // Проверяем ввод
+    const bet = parseInt(guessBetElement.textContent);
+    const userGuess = parseInt(document.getElementById('numberGuess')?.value);
+    
     if (userGuess < 1 || userGuess > 10) {
         guessResultElement.innerHTML = 'Пожалуйста, введите число от 1 до 10!';
         guessResultElement.className = 'result lose';
@@ -1350,7 +743,6 @@ function playGuess() {
         return;
     }
     
-    // Проверяем, хватает ли денег
     if (bet > balance) {
         guessResultElement.innerHTML = 'Недостаточно дошираков для ставки!';
         guessResultElement.className = 'result lose';
@@ -1358,17 +750,13 @@ function playGuess() {
         return;
     }
     
-    // Воспроизводим звук ставки
     playSound('click');
     
-    // Снимаем ставку
     balance -= bet;
     updateBalance();
     
-    // Генерируем случайное число
     const randomNumber = Math.floor(Math.random() * 10) + 1;
     
-    // Проверяем угадал ли игрок
     if (userGuess === randomNumber) {
         const winAmount = bet * 5;
         balance += winAmount;
@@ -1380,10 +768,7 @@ function playGuess() {
         addToHistory('Угадай число', `+${winAmount}`, true);
         playerStats.gamesWon += 1;
         
-        // Воспроизводим звук победы
         playSound('win');
-        
-        // Показываем уведомление
         showNotification(`Победа! +${winAmount} дошираков!`, 'info');
     } else {
         guessResultElement.innerHTML = `Неудача! Загаданное число было ${randomNumber}. <span class="lose">-${bet} дошираков</span>`;
@@ -1392,960 +777,34 @@ function playGuess() {
         addToHistory('Угадай число', `-${bet}`, false);
         playerStats.gamesLost += 1;
         
-        // Воспроизводим звук поражения
         playSound('lose');
     }
     
     playerStats.totalGames += 1;
     updateStats();
-}
-
-// === НОВЫЕ ИГРЫ ===
-
-// 1. БЛЭКДЖЕК
-function initBlackjack() {
-    const hitBtn = document.getElementById('blackjackHit');
-    const standBtn = document.getElementById('blackjackStand');
-    const doubleBtn = document.getElementById('blackjackDouble');
-    const restartBtn = document.getElementById('blackjackRestart');
-    
-    hitBtn.addEventListener('click', blackjackHit);
-    standBtn.addEventListener('click', blackjackStand);
-    doubleBtn.addEventListener('click', blackjackDouble);
-    restartBtn.addEventListener('click', startBlackjack);
-    
-    // Начинаем новую игру при инициализации
-    blackjackResultElement.innerHTML = 'Сделайте ставку и начните игру!';
-    updateBlackjackControls(false);
-}
-
-function startBlackjack() {
-    const bet = parseInt(blackjackBetElement.textContent);
-    
-    if (bet > balance) {
-        blackjackResultElement.innerHTML = 'Недостаточно дошираков для ставки!';
-        blackjackResultElement.className = 'result lose';
-        showNotification('Недостаточно дошираков!', 'error');
-        return;
-    }
-    
-    if (bet < 5) {
-        blackjackResultElement.innerHTML = 'Минимальная ставка - 5 дошираков!';
-        blackjackResultElement.className = 'result lose';
-        showNotification('Минимальная ставка - 5 дошираков!', 'error');
-        return;
-    }
-    
-    // Снимаем ставку
-    balance -= bet;
-    updateBalance();
-    
-    // Сбрасываем игру
-    blackjackDealerCards = [];
-    blackjackPlayerCards = [];
-    blackjackGameActive = true;
-    
-    // Раздаем начальные карты
-    blackjackDealerCards.push(drawCard());
-    blackjackPlayerCards.push(drawCard());
-    blackjackPlayerCards.push(drawCard());
-    
-    // Показываем карты
-    updateBlackjackDisplay();
-    
-    // Проверяем блэкджек сразу
-    if (calculateScore(blackjackPlayerCards) === 21) {
-        // У игрока блэкджек
-        blackjackGameActive = false;
-        endBlackjackGame(bet, true);
-        return;
-    }
-    
-    updateBlackjackControls(true);
-    blackjackResultElement.innerHTML = 'Ваш ход. Возьмите карту или остановитесь.';
-    blackjackResultElement.className = 'result';
-    
-    playerStats.totalGames += 1;
-    updateStats();
-}
-
-function drawCard() {
-    const cards = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-    return cards[Math.floor(Math.random() * cards.length)];
-}
-
-function calculateScore(cards) {
-    let score = 0;
-    let aces = 0;
-    
-    for (const card of cards) {
-        if (card === 'A') {
-            aces++;
-            score += 11;
-        } else if (['K', 'Q', 'J'].includes(card)) {
-            score += 10;
-        } else {
-            score += parseInt(card);
-        }
-    }
-    
-    // Корректируем тузы, если перебор
-    while (score > 21 && aces > 0) {
-        score -= 10;
-        aces--;
-    }
-    
-    return score;
-}
-
-function updateBlackjackDisplay() {
-    const dealerCardsElement = document.getElementById('dealerCards');
-    const playerCardsElement = document.getElementById('playerCards');
-    const dealerScoreElement = document.getElementById('dealerScore');
-    const playerScoreElement = document.getElementById('playerScore');
-    
-    // Карты дилера
-    dealerCardsElement.innerHTML = '';
-    if (blackjackGameActive) {
-        // Показываем только первую карту дилера
-        dealerCardsElement.innerHTML += `<div class="card">${blackjackDealerCards[0]}</div>`;
-        dealerCardsElement.innerHTML += `<div class="card">?</div>`;
-        dealerScoreElement.textContent = 'Очки: ?';
-    } else {
-        // Показываем все карты дилера
-        blackjackDealerCards.forEach(card => {
-            dealerCardsElement.innerHTML += `<div class="card">${card}</div>`;
-        });
-        dealerScoreElement.textContent = `Очки: ${calculateScore(blackjackDealerCards)}`;
-    }
-    
-    // Карты игрока
-    playerCardsElement.innerHTML = '';
-    blackjackPlayerCards.forEach(card => {
-        playerCardsElement.innerHTML += `<div class="card">${card}</div>`;
-    });
-    playerScoreElement.textContent = `Очки: ${calculateScore(blackjackPlayerCards)}`;
-}
-
-function updateBlackjackControls(enable) {
-    document.getElementById('blackjackHit').disabled = !enable;
-    document.getElementById('blackjackStand').disabled = !enable;
-    document.getElementById('blackjackDouble').disabled = !enable || blackjackPlayerCards.length > 2;
-}
-
-function blackjackHit() {
-    if (!blackjackGameActive) return;
-    
-    blackjackPlayerCards.push(drawCard());
-    updateBlackjackDisplay();
-    
-    const playerScore = calculateScore(blackjackPlayerCards);
-    
-    if (playerScore > 21) {
-        // Перебор
-        blackjackGameActive = false;
-        endBlackjackGame(parseInt(blackjackBetElement.textContent), false);
-    } else if (playerScore === 21) {
-        // 21 очков
-        blackjackStand();
-    }
-}
-
-function blackjackStand() {
-    if (!blackjackGameActive) return;
-    
-    blackjackGameActive = false;
-    
-    // Дилер берет карты
-    while (calculateScore(blackjackDealerCards) < 17) {
-        blackjackDealerCards.push(drawCard());
-    }
-    
-    updateBlackjackDisplay();
-    endBlackjackGame(parseInt(blackjackBetElement.textContent), false);
-}
-
-function blackjackDouble() {
-    if (!blackjackGameActive || blackjackPlayerCards.length > 2) return;
-    
-    const bet = parseInt(blackjackBetElement.textContent);
-    
-    if (bet * 2 > balance) {
-        showNotification('Недостаточно дошираков для удвоения!', 'error');
-        return;
-    }
-    
-    // Удваиваем ставку
-    balance -= bet;
-    updateBalance();
-    
-    blackjackPlayerCards.push(drawCard());
-    updateBlackjackDisplay();
-    
-    const playerScore = calculateScore(blackjackPlayerCards);
-    
-    if (playerScore > 21) {
-        // Перебор
-        blackjackGameActive = false;
-        endBlackjackGame(bet * 2, false, true); // Проиграли удвоенную ставку
-    } else {
-        // Останавливаемся после удвоения
-        blackjackStand();
-    }
-}
-
-function endBlackjackGame(bet, isBlackjack = false, isDouble = false) {
-    updateBlackjackControls(false);
-    
-    const playerScore = calculateScore(blackjackPlayerCards);
-    const dealerScore = calculateScore(blackjackDealerCards);
-    
-    let result = '';
-    let winAmount = 0;
-    let isWin = false;
-    
-    if (isBlackjack) {
-        // Блэкджек (2.5x ставки)
-        winAmount = Math.floor(bet * 2.5);
-        balance += winAmount;
-        result = `БЛЭКДЖЕК! Вы выиграли <span class="win">${winAmount} дошираков!</span>`;
-        isWin = true;
-        playerStats.gamesWon += 1;
-        playSound('win');
-    } else if (playerScore > 21) {
-        // Перебор игрока
-        result = `Перебор! Вы проиграли <span class="lose">${isDouble ? bet * 2 : bet} дошираков</span>`;
-        playerStats.gamesLost += 1;
-        playSound('lose');
-    } else if (dealerScore > 21) {
-        // Перебор дилера (2x ставки)
-        winAmount = isDouble ? bet * 4 : bet * 2;
-        balance += winAmount;
-        result = `Дилер перебрал! Вы выиграли <span class="win">${winAmount} дошираков!</span>`;
-        isWin = true;
-        playerStats.gamesWon += 1;
-        playSound('win');
-    } else if (playerScore > dealerScore) {
-        // Игрок выиграл (2x ставки)
-        winAmount = isDouble ? bet * 4 : bet * 2;
-        balance += winAmount;
-        result = `Вы победили! Вы выиграли <span class="win">${winAmount} дошираков!</span>`;
-        isWin = true;
-        playerStats.gamesWon += 1;
-        playSound('win');
-    } else if (playerScore < dealerScore) {
-        // Дилер выиграл
-        result = `Дилер победил! Вы проиграли <span class="lose">${isDouble ? bet * 2 : bet} дошираков</span>`;
-        playerStats.gamesLost += 1;
-        playSound('lose');
-    } else {
-        // Ничья, возвращаем ставку
-        balance += isDouble ? bet * 2 : bet;
-        result = `Ничья! Ставка возвращена`;
-        playSound('click');
-    }
-    
-    updateBalance();
-    blackjackResultElement.innerHTML = result;
-    blackjackResultElement.className = 'result ' + (isWin ? 'win' : 'lose');
-    
-    // Добавляем в историю
-    addToHistory('Блэкджек', isWin ? `+${winAmount}` : `-${isDouble ? bet * 2 : bet}`, isWin);
-    
-    // Показываем уведомление
-    if (isWin) {
-        showNotification(`Победа в блэкджеке! +${winAmount} дошираков`, 'info');
-    }
-    
-    updateStats();
-}
-
-// 2. РУЛЕТКА
-function initRoulette() {
-    const playBtn = document.getElementById('playRoulette');
-    const numberBtn = document.getElementById('betOnNumber');
-    const betButtons = document.querySelectorAll('.roulette-bet-btn');
-    
-    playBtn.addEventListener('click', playRoulette);
-    numberBtn.addEventListener('click', () => {
-        const number = parseInt(document.getElementById('rouletteNumber').value);
-        if (number >= 0 && number <= 36) {
-            rouletteCurrentBet = { type: 'number', value: number, multiplier: 36 };
-            updateRouletteSelection();
-        } else {
-            showNotification('Введите число от 0 до 36!', 'error');
-        }
-    });
-    
-    betButtons.forEach(btn => {
-        if (btn.id !== 'betOnNumber') {
-            btn.addEventListener('click', function() {
-                const betType = this.getAttribute('data-bet');
-                const multiplier = parseInt(this.getAttribute('data-multiplier'));
-                rouletteCurrentBet = { type: betType, value: betType, multiplier: multiplier };
-                updateRouletteSelection();
-            });
-        }
-    });
-}
-
-function updateRouletteSelection() {
-    if (!rouletteCurrentBet) return;
-    
-    const betButtons = document.querySelectorAll('.roulette-bet-btn');
-    betButtons.forEach(btn => {
-        const betType = btn.getAttribute('data-bet');
-        if (betType === rouletteCurrentBet.value) {
-            btn.style.backgroundColor = '#e94560';
-        } else {
-            btn.style.backgroundColor = '#0f3460';
-        }
-    });
-    
-    if (rouletteCurrentBet.type === 'number') {
-        document.getElementById('rouletteNumber').style.borderColor = '#e94560';
-        rouletteResultElement.innerHTML = `Выбрана ставка на число ${rouletteCurrentBet.value} (${rouletteCurrentBet.multiplier}x)`;
-    } else {
-        document.getElementById('rouletteNumber').style.borderColor = '#0f3460';
-        const betNames = {
-            'red': 'Красное',
-            'black': 'Черное',
-            'even': 'Четное',
-            'odd': 'Нечетное'
-        };
-        rouletteResultElement.innerHTML = `Выбрана ставка: ${betNames[rouletteCurrentBet.value]} (${rouletteCurrentBet.multiplier}x)`;
-    }
-}
-
-function playRoulette() {
-    if (!rouletteCurrentBet) {
-        rouletteResultElement.innerHTML = 'Сначала выберите тип ставки!';
-        rouletteResultElement.className = 'result lose';
-        return;
-    }
-    
-    const bet = parseInt(rouletteBetElement.textContent);
-    
-    if (bet > balance) {
-        rouletteResultElement.innerHTML = 'Недостаточно дошираков для ставки!';
-        rouletteResultElement.className = 'result lose';
-        showNotification('Недостаточно дошираков!', 'error');
-        return;
-    }
-    
-    if (bet < 5) {
-        rouletteResultElement.innerHTML = 'Минимальная ставка - 5 дошираков!';
-        rouletteResultElement.className = 'result lose';
-        showNotification('Минимальная ставка - 5 дошираков!', 'error');
-        return;
-    }
-    
-    // Снимаем ставку
-    balance -= bet;
-    updateBalance();
-    
-    playerStats.totalGames += 1;
-    
-    // Генерируем случайное число от 0 до 36
-    const winningNumber = Math.floor(Math.random() * 37);
-    const isRed = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(winningNumber);
-    const isBlack = !isRed && winningNumber !== 0;
-    const isEven = winningNumber % 2 === 0 && winningNumber !== 0;
-    const isOdd = winningNumber % 2 === 1;
-    
-    // Анимация рулетки
-    const wheel = document.getElementById('rouletteWheel');
-    const ball = wheel.querySelector('.roulette-ball');
-    
-    wheel.style.animation = 'spin 3s cubic-bezier(0.1, 0.7, 0.1, 1)';
-    ball.style.animation = 'ballSpin 3s linear';
-    
-    // Отключаем кнопку на время анимации
-    const playBtn = document.getElementById('playRoulette');
-    playBtn.disabled = true;
-    playBtn.textContent = 'Крутится...';
-    
-    // Воспроизводим звук
-    playSound('spin');
-    
-    // Проверяем результат через 3 секунды
-    setTimeout(() => {
-        wheel.style.animation = '';
-        ball.style.animation = '';
-        
-        let isWin = false;
-        let winAmount = 0;
-        
-        // Проверяем выигрыш
-        if (rouletteCurrentBet.type === 'number') {
-            if (rouletteCurrentBet.value === winningNumber) {
-                isWin = true;
-                winAmount = bet * rouletteCurrentBet.multiplier;
-            }
-        } else {
-            switch(rouletteCurrentBet.value) {
-                case 'red':
-                    if (isRed) {
-                        isWin = true;
-                        winAmount = bet * rouletteCurrentBet.multiplier;
-                    }
-                    break;
-                case 'black':
-                    if (isBlack) {
-                        isWin = true;
-                        winAmount = bet * rouletteCurrentBet.multiplier;
-                    }
-                    break;
-                case 'even':
-                    if (isEven) {
-                        isWin = true;
-                        winAmount = bet * rouletteCurrentBet.multiplier;
-                    }
-                    break;
-                case 'odd':
-                    if (isOdd) {
-                        isWin = true;
-                        winAmount = bet * rouletteCurrentBet.multiplier;
-                    }
-                    break;
-            }
-        }
-        
-        // Обновляем баланс
-        if (isWin) {
-            balance += winAmount;
-            playerStats.gamesWon += 1;
-            playSound('win');
-            showNotification(`Выигрыш в рулетке! +${winAmount} дошираков`, 'info');
-        } else {
-            playerStats.gamesLost += 1;
-            playSound('lose');
-        }
-        
-        updateBalance();
-        
-        // Показываем результат
-        const numberColor = winningNumber === 0 ? 'зеленый' : isRed ? 'красный' : 'черный';
-        const numberType = winningNumber === 0 ? 'ноль' : isEven ? 'четное' : 'нечетное';
-        
-        if (isWin) {
-            rouletteResultElement.innerHTML = `
-                Выигрышное число: ${winningNumber} (${numberColor}, ${numberType})<br>
-                <span class="win">ПОБЕДА! +${winAmount} дошираков!</span>
-            `;
-            rouletteResultElement.className = 'result win';
-        } else {
-            rouletteResultElement.innerHTML = `
-                Выигрышное число: ${winningNumber} (${numberColor}, ${numberType})<br>
-                <span class="lose">Вы проиграли ${bet} дошираков</span>
-            `;
-            rouletteResultElement.className = 'result lose';
-        }
-        
-        // Добавляем в историю
-        addToHistory('Рулетка', isWin ? `+${winAmount}` : `-${bet}`, isWin);
-        
-        // Включаем кнопку
-        playBtn.disabled = false;
-        playBtn.textContent = 'Крутить рулетку';
-        
-        updateStats();
-    }, 3000);
-}
-
-// 3. ГОНКИ
-function initRace() {
-    const startBtn = document.getElementById('startRace');
-    const racerBtns = document.querySelectorAll('.racer-btn');
-    
-    startBtn.addEventListener('click', startRace);
-    
-    racerBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const racerId = this.getAttribute('data-racer');
-            selectRacer(parseInt(racerId));
-        });
-    });
-}
-
-function selectRacer(racerId) {
-    raceSelectedRacer = racerId;
-    
-    const racerBtns = document.querySelectorAll('.racer-btn');
-    racerBtns.forEach(btn => {
-        if (btn.getAttribute('data-racer') == racerId) {
-            btn.style.backgroundColor = '#e94560';
-        } else {
-            btn.style.backgroundColor = '#0f3460';
-        }
-    });
-    
-    const racerNames = {
-        1: '🍜 Лапша-1',
-        2: '🥤 Напиток',
-        3: '🍥 Вафля',
-        4: '🎲 Удача'
-    };
-    
-    document.getElementById('selectedRacer').innerHTML = 
-        `Выбран гонщик: <strong>${racerNames[racerId]}</strong>`;
-}
-
-function startRace() {
-    if (!raceSelectedRacer) {
-        raceResultElement.innerHTML = 'Сначала выберите гонщика!';
-        raceResultElement.className = 'result lose';
-        return;
-    }
-    
-    const bet = parseInt(raceBetElement.textContent);
-    
-    if (bet > balance) {
-        raceResultElement.innerHTML = 'Недостаточно дошираков для ставки!';
-        raceResultElement.className = 'result lose';
-        showNotification('Недостаточно дошираков!', 'error');
-        return;
-    }
-    
-    if (bet < 5) {
-        raceResultElement.innerHTML = 'Минимальная ставка - 5 дошираков!';
-        raceResultElement.className = 'result lose';
-        showNotification('Минимальная ставка - 5 дошираков!', 'error');
-        return;
-    }
-    
-    if (raceInProgress) return;
-    
-    // Снимаем ставку
-    balance -= bet;
-    updateBalance();
-    
-    raceInProgress = true;
-    playerStats.totalGames += 1;
-    
-    const startBtn = document.getElementById('startRace');
-    startBtn.disabled = true;
-    startBtn.textContent = 'Гонка началась!';
-    
-    raceResultElement.innerHTML = 'Гонка началась!';
-    raceResultElement.className = 'result';
-    
-    // Сброс позиций гонщиков
-    for (let i = 1; i <= 4; i++) {
-        const racer = document.getElementById(`racer${i}`);
-        racer.style.left = '0px';
-    }
-    
-    // Запускаем гонку
-    const finishLine = 280; // пикселей
-    const racers = [1, 2, 3, 4];
-    const speeds = racers.map(() => Math.random() * 3 + 2); // Случайные скорости
-    
-    let positions = [0, 0, 0, 0];
-    let winner = null;
-    
-    // Воспроизводим звук гонки
-    playSound('spin');
-    
-    const raceInterval = setInterval(() => {
-        // Двигаем каждого гонщика
-        for (let i = 0; i < 4; i++) {
-            positions[i] += speeds[i] + Math.random() * 2;
-            const racer = document.getElementById(`racer${i + 1}`);
-            racer.style.left = `${Math.min(positions[i], finishLine)}px`;
-            
-            // Проверяем, достиг ли финиша
-            if (positions[i] >= finishLine && winner === null) {
-                winner = i + 1;
-            }
-        }
-        
-        // Если есть победитель, заканчиваем гонку
-        if (winner !== null) {
-            clearInterval(raceInterval);
-            endRace(winner, bet);
-        }
-    }, 50);
-}
-
-function endRace(winner, bet) {
-    raceInProgress = false;
-    
-    const startBtn = document.getElementById('startRace');
-    startBtn.disabled = false;
-    startBtn.textContent = 'Начать гонку';
-    
-    // Подсвечиваем победителя
-    const winnerRacer = document.getElementById(`racer${winner}`);
-    winnerRacer.classList.add('winning');
-    
-    const isWin = winner === raceSelectedRacer;
-    
-    if (isWin) {
-        const winAmount = bet * 3;
-        balance += winAmount;
-        updateBalance();
-        
-        raceResultElement.innerHTML = `
-            Победил гонщик №${winner}!<br>
-            <span class="win">ПОБЕДА! Ваш гонщик выиграл! +${winAmount} дошираков!</span>
-        `;
-        raceResultElement.className = 'result win';
-        
-        playerStats.gamesWon += 1;
-        playSound('win');
-        showNotification(`Победа в гонках! +${winAmount} дошираков`, 'info');
-        
-        addToHistory('Гонки', `+${winAmount}`, true);
-    } else {
-        raceResultElement.innerHTML = `
-            Победил гонщик №${winner}!<br>
-            <span class="lose">Вы проиграли ${bet} дошираков</span>
-        `;
-        raceResultElement.className = 'result lose';
-        
-        playerStats.gamesLost += 1;
-        playSound('lose');
-        
-        addToHistory('Гонки', `-${bet}`, false);
-    }
-    
-    updateStats();
-    
-    // Сбрасываем подсветку через 3 секунды
-    setTimeout(() => {
-        winnerRacer.classList.remove('winning');
-    }, 3000);
 }
 
 // ======================
-// РЕЖИМ РАЗРАБОТЧИКА - ДВА УРОВНЯ ДОСТУПА
+// ПРОМОКОДЫ
 // ======================
 
-// Пароли разработчика с разными уровнями доступа
-const DEVELOPER_PASSWORDS = {
-    // Полный доступ - все функции
-    FULL: "RK9L3M-X8Q4N2-VB6C1X-PL5S7W",
-    // Ограниченный доступ - только тестирование
-    LIMITED: "4F6H8J-1A3C5E-7G9I2K-4M6N8P"
-};
-
-// Уровни доступа
-const ACCESS_LEVELS = {
-    FULL: 'full',      // Полный доступ (разработчик)
-    LIMITED: 'limited' // Ограниченный доступ (тестировщик)
-};
-
-let currentAccessLevel = null;
-let isDeveloperMode = false;
-
-// Обновляем функцию проверки пароля разработчика
-function checkDeveloperPassword() {
-    const password = devPasswordInput.value.trim();
+function activatePromoCode() {
+    if (!promoCodeInput) return;
     
-    // Проверяем пароль полного доступа
-    if (password === DEVELOPER_PASSWORDS.FULL) {
-        isDeveloperMode = true;
-        currentAccessLevel = ACCESS_LEVELS.FULL;
-        activateDeveloperMode('FULL');
-        showDeveloperMessage('🔓 Режим разработчика (ПОЛНЫЙ ДОСТУП) активирован', false, 'full');
-        playSound('win');
-    }
-    // Проверяем пароль ограниченного доступа
-    else if (password === DEVELOPER_PASSWORDS.LIMITED) {
-        isDeveloperMode = true;
-        currentAccessLevel = ACCESS_LEVELS.LIMITED;
-        activateDeveloperMode('LIMITED');
-        showDeveloperMessage('🔐 Режим тестировщика (ОГРАНИЧЕННЫЙ ДОСТУП) активирован', false, 'limited');
-        playSound('click');
-    }
-    else {
-        showDeveloperMessage('❌ Неверный пароль! Доступ запрещён.', true);
-        devPasswordInput.value = '';
-        devPasswordInput.focus();
-        playSound('lose');
-    }
-}
-
-// Активация режима разработчика в зависимости от уровня доступа
-function activateDeveloperMode(level) {
-    devControls.style.display = 'block';
-    submitDevPassword.style.display = 'none';
-    exitDevMode.style.display = 'inline-block';
-    devPasswordInput.style.display = 'none';
+    const code = promoCodeInput.value.trim().toUpperCase();
     
-    // Показываем индикатор уровня доступа
-    addAccessLevelIndicator(level);
-    
-    // Настраиваем доступные функции в зависимости от уровня
-    configureAccessByLevel(level);
-}
-
-// Добавление индикатора уровня доступа
-function addAccessLevelIndicator(level) {
-    // Удаляем старый индикатор, если есть
-    const oldIndicator = document.querySelector('.access-level-indicator');
-    if (oldIndicator) oldIndicator.remove();
-    
-    // Создаем новый индикатор
-    const indicator = document.createElement('div');
-    indicator.className = 'access-level-indicator';
-    
-    if (level === 'FULL') {
-        indicator.innerHTML = `
-            <div style="
-                background: linear-gradient(45deg, #e94560, #ff9a3c);
-                color: white;
-                padding: 12px;
-                border-radius: 8px;
-                margin-bottom: 20px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                border: 2px solid #fff;
-                box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
-            ">
-                <i class="fas fa-crown" style="font-size: 1.5rem;"></i>
-                <div>
-                    <strong style="font-size: 1.1rem;">👑 РЕЖИМ РАЗРАБОТЧИКА (ПОЛНЫЙ ДОСТУП)</strong>
-                    <div style="font-size: 0.9rem; opacity: 0.9;">Доступны все функции: управление балансом, очистка данных, тестирование игр</div>
-                </div>
-            </div>
-        `;
-    } else {
-        indicator.innerHTML = `
-            <div style="
-                background: linear-gradient(45deg, #0f3460, #1a5fb4);
-                color: white;
-                padding: 12px;
-                border-radius: 8px;
-                margin-bottom: 20px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                border: 2px solid #4cd964;
-                box-shadow: 0 0 20px rgba(76, 217, 100, 0.3);
-            ">
-                <i class="fas fa-flask" style="font-size: 1.5rem;"></i>
-                <div>
-                    <strong style="font-size: 1.1rem;">🧪 РЕЖИМ ТЕСТИРОВЩИКА (ОГРАНИЧЕННЫЙ ДОСТУП)</strong>
-                    <div style="font-size: 0.9rem; opacity: 0.9;">Доступно только тестирование игр</div>
-                </div>
-            </div>
-        `;
-    }
-    
-    // Вставляем индикатор в начало modal-body
-    const modalBody = document.querySelector('.modal-body');
-    modalBody.insertBefore(indicator, modalBody.firstChild);
-}
-
-// Настройка доступных функций в зависимости от уровня доступа
-function configureAccessByLevel(level) {
-    // Получаем все секции управления
-    const balanceSection = document.querySelector('.dev-section:first-child');
-    const clearDataSection = document.querySelector('.dev-section:nth-child(2)');
-    const testSection = document.querySelector('.dev-section:nth-child(3)');
-    
-    if (level === 'FULL') {
-        // ПОЛНЫЙ ДОСТУП - всё доступно
-        if (balanceSection) balanceSection.style.display = 'block';
-        if (clearDataSection) clearDataSection.style.display = 'block';
-        if (testSection) testSection.style.display = 'block';
-        
-        // Добавляем дополнительные функции для полного доступа
-        addFullAccessFeatures();
-    } else {
-        // ОГРАНИЧЕННЫЙ ДОСТУП - только тестирование
-        if (balanceSection) balanceSection.style.display = 'none';
-        if (clearDataSection) clearDataSection.style.display = 'none';
-        if (testSection) testSection.style.display = 'block';
-        
-        // Блокируем изменение ставок в тестовых кнопках для ограниченного доступа
-        disableBetManipulation();
-        
-        // Добавляем дополнительные функции для тестировщика
-        addLimitedAccessFeatures();
-    }
-}
-
-// Дополнительные функции для полного доступа
-function addFullAccessFeatures() {
-    // Добавляем секцию управления промокодами
-    if (!document.querySelector('.dev-section.promo-section')) {
-        const promoSection = document.createElement('div');
-        promoSection.className = 'dev-section promo-section';
-        promoSection.innerHTML = `
-            <h4><i class="fas fa-ticket-alt"></i> Управление промокодами</h4>
-            <div class="dev-input-group">
-                <input type="text" id="devPromoCode" placeholder="Название промокода">
-                <input type="number" id="devPromoValue" placeholder="Сумма" min="1" max="10000">
-            </div>
-            <div class="dev-buttons">
-                <button class="dev-btn" id="generatePromoBtn">🎫 Сгенерировать</button>
-                <button class="dev-btn" id="addCustomPromo">➕ Добавить свой</button>
-                <button class="dev-btn" id="resetPromoCodes">🔄 Сбросить все</button>
-            </div>
-            <div class="dev-input-group" style="margin-top: 10px;">
-                <input type="text" id="promoFilter" placeholder="🔍 Поиск промокодов">
-            </div>
-            <div id="promoList" style="margin-top: 15px; max-height: 200px; overflow-y: auto;">
-                <!-- Список активных промокодов -->
-            </div>
-        `;
-        
-        const testSection = document.querySelector('.dev-section:nth-child(3)');
-        testSection.parentNode.insertBefore(promoSection, testSection.nextSibling);
-        
-        // Инициализируем функции управления промокодами
-        initPromoManagement();
-    }
-    
-    // Добавляем секцию логов
-    if (!document.querySelector('.dev-section.logs-section')) {
-        const logsSection = document.createElement('div');
-        logsSection.className = 'dev-section logs-section';
-        logsSection.innerHTML = `
-            <h4><i class="fas fa-terminal"></i> Консоль разработчика</h4>
-            <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;" id="devConsole">
-                <div style="color: #4cd964;">✅ Режим разработчика активирован</div>
-                <div style="color: #ff9a3c;">👑 Полный доступ</div>
-            </div>
-            <div class="dev-buttons" style="margin-top: 10px;">
-                <button class="dev-btn" id="clearConsole">🧹 Очистить консоль</button>
-                <button class="dev-btn" id="exportLogs">📥 Экспорт логов</button>
-            </div>
-        `;
-        
-        const promoSection = document.querySelector('.dev-section.promo-section');
-        promoSection.parentNode.insertBefore(logsSection, promoSection.nextSibling);
-        
-        initDevConsole();
-    }
-}
-
-// Инициализация управления промокодами
-function initPromoManagement() {
-    // Обновляем список промокодов
-    updatePromoList();
-    
-    // Генерация промокода
-    document.getElementById('generatePromoBtn')?.addEventListener('click', () => {
-        generatePromoCode();
-    });
-    
-    // Добавление своего промокода
-    document.getElementById('addCustomPromo')?.addEventListener('click', () => {
-        const codeInput = document.getElementById('devPromoCode');
-        const valueInput = document.getElementById('devPromoValue');
-        const code = codeInput.value.trim().toUpperCase();
-        const value = parseInt(valueInput.value);
-        
-        if (code && value > 0) {
-            addCustomPromoCode(code, value);
-            codeInput.value = '';
-            valueInput.value = '';
-        } else {
-            showDeveloperMessage('Введите название промокода и сумму!', true);
-        }
-    });
-    
-    // Сброс всех промокодов
-    document.getElementById('resetPromoCodes')?.addEventListener('click', () => {
-        if (confirm('Вы уверены? Все промокоды будут сброшены!')) {
-            resetAllPromoCodes();
-        }
-    });
-    
-    // Поиск промокодов
-    document.getElementById('promoFilter')?.addEventListener('input', (e) => {
-        filterPromoList(e.target.value);
-    });
-}
-
-// Обновление списка промокодов
-function updatePromoList() {
-    const promoList = document.getElementById('promoList');
-    if (!promoList) return;
-    
-    const promos = window.promoRewards || {};
-    let html = '<div style="color: #ff9a3c; margin-bottom: 10px;"><i class="fas fa-tags"></i> Активные промокоды:</div>';
-    
-    for (const [code, value] of Object.entries(promos)) {
-        html += `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 5px;">
-                <div>
-                    <span style="font-family: monospace; color: #4cd964;">${code}</span>
-                    <span style="color: #ff9a3c; margin-left: 10px;">+${value} 🍜</span>
-                </div>
-                <button class="dev-btn" style="padding: 5px 10px;" onclick="removePromoCode('${code}')">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        `;
-    }
-    
-    if (Object.keys(promos).length === 0) {
-        html += '<div style="color: #aaa; text-align: center; padding: 15px;">Нет активных промокодов</div>';
-    }
-    
-    promoList.innerHTML = html;
-}
-
-// Функция для удаления промокода
-window.removePromoCode = function(code) {
-    if (currentAccessLevel !== ACCESS_LEVELS.FULL) return;
-    
-    if (window.promoRewards && window.promoRewards[code]) {
-        delete window.promoRewards[code];
-        localStorage.setItem('promoRewards', JSON.stringify(window.promoRewards));
-        updatePromoList();
-        addToDevConsole(`❌ Промокод ${code} удален`, '#ff3b30');
-    }
-};
-
-// Фильтрация списка промокодов
-function filterPromoList(query) {
-    const promoList = document.getElementById('promoList');
-    if (!promoList) return;
-    
-    const items = promoList.children;
-    for (let i = 1; i < items.length; i++) {
-        const item = items[i];
-        const codeText = item.querySelector('span')?.textContent || '';
-        if (codeText.toLowerCase().includes(query.toLowerCase())) {
-            item.style.display = 'flex';
-        } else {
-            item.style.display = 'none';
-        }
-    }
-}
-
-// Добавление своего промокода
-function addCustomPromoCode(code, value) {
-    if (currentAccessLevel !== ACCESS_LEVELS.FULL) {
-        showDeveloperMessage('❌ Недостаточно прав для добавления промокодов', true);
+    if (!code) {
+        showNotification('Введите промокод!', 'error');
         return;
     }
     
-    if (!window.promoRewards) {
-        window.promoRewards = { ...promoRewards };
+    if (usedPromoCodes.includes(code)) {
+        showNotification('Этот промокод уже был использован!', 'error');
+        promoCodeInput.value = '';
+        return;
     }
     
-    window.promoRewards[code] = value;
-    localStorage.setItem('promoRewards', JSON.stringify(window.promoRewards));
-    
-    updatePromoList();
-    showDeveloperMessage(`✅ Промокод ${code} (+${value}) добавлен`, false);
-    addToDevConsole(`✅ Добавлен промокод: ${code} (${value} 🍜)`, '#4cd964');
-}
-
-// Сброс всех промокодов
-function resetAllPromoCodes() {
-    if (currentAccessLevel !== ACCESS_LEVELS.FULL) return;
-    
-    // Восстанавливаем стандартные промокоды
-    window.promoRewards = {
+    const promoRewards = {
         'YTK455GP': 3000,
         'CSSTART': 500,
         'YURICH': 2000,
@@ -2354,301 +813,243 @@ function resetAllPromoCodes() {
         'GOLDENKNIGHT': 900
     };
     
-    localStorage.setItem('promoRewards', JSON.stringify(window.promoRewards));
-    localStorage.removeItem('usedPromoCodes');
-    usedPromoCodes = [];
+    const reward = promoRewards[code];
     
-    updatePromoList();
-    showDeveloperMessage('🔄 Промокоды сброшены к стандартным', false);
-    addToDevConsole('🔄 Промокоды сброшены к стандартным', '#ff9a3c');
-}
-
-// Инициализация консоли разработчика
-function initDevConsole() {
-    const console = document.getElementById('devConsole');
-    const clearBtn = document.getElementById('clearConsole');
-    const exportBtn = document.getElementById('exportLogs');
-    
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            console.innerHTML = '<div style="color: #4cd964;">✅ Консоль очищена</div>';
-        });
+    if (reward) {
+        balance += reward;
+        updateBalance();
+        
+        usedPromoCodes.push(code);
+        localStorage.setItem('usedPromoCodes', JSON.stringify(usedPromoCodes));
+        
+        showNotification(`Промокод активирован! +${reward} дошираков`, 'info');
+        addToHistory('Промокод', `+${reward}`, true);
+        
+        playSound('win');
+    } else {
+        showNotification('Неверный промокод!', 'error');
     }
     
-    if (exportBtn) {
-        exportBtn.addEventListener('click', () => {
-            const logs = console.innerText;
-            const blob = new Blob([logs], {type: 'text/plain'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `dev-console-${new Date().toISOString()}.txt`;
-            a.click();
-        });
-    }
+    promoCodeInput.value = '';
 }
 
-// Добавление записи в консоль разработчика
-function addToDevConsole(message, color = '#fff') {
-    const console = document.getElementById('devConsole');
-    if (!console) return;
-    
-    const time = new Date().toLocaleTimeString('ru-RU', { hour12: false });
-    const entry = document.createElement('div');
-    entry.style.color = color;
-    entry.style.marginBottom = '3px';
-    entry.style.fontSize = '0.85rem';
-    entry.innerHTML = `<span style="color: #888;">[${time}]</span> ${message}`;
-    
-    console.appendChild(entry);
-    console.scrollTop = console.scrollHeight;
-}
+// ======================
+// ОНЛАЙН-РЕЖИМ - ИСПРАВЛЕНО
+// ======================
 
-// Дополнительные функции для ограниченного доступа
-function addLimitedAccessFeatures() {
-    // Добавляем предупреждение о невозможности изменения баланса
-    const warning = document.createElement('div');
-    warning.className = 'access-warning';
-    warning.innerHTML = `
-        <div style="
-            background: rgba(255, 59, 48, 0.1);
-            border: 1px solid #ff3b30;
-            color: #ff3b30;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        ">
-            <i class="fas fa-shield-alt"></i>
-            <div>
-                <strong>Режим только для тестирования</strong><br>
-                <span style="font-size: 0.9rem;">Изменение баланса и данных недоступно</span>
-            </div>
-        </div>
-    `;
+function toggleOnlineMode() {
+    onlineMode = !onlineMode;
+    const toggleBtn = document.getElementById('toggleOnline');
+    const statusOffline = document.querySelector('.status-offline');
+    const statusOnline = document.querySelector('.status-online');
+    const playerIdDisplay = document.getElementById('playerIdDisplay');
+    const playerIdSpan = document.getElementById('playerId');
     
-    const testSection = document.querySelector('.dev-section:nth-child(3)');
-    if (testSection && !document.querySelector('.access-warning')) {
-        testSection.appendChild(warning);
-    }
-}
-
-// Блокировка изменения ставок в тестовых кнопках
-function disableBetManipulation() {
-    // Сохраняем оригинальные обработчики и заменяем их
-    const testButtons = [
-        testWinSlotsBtn,
-        testWinGuessBtn,
-        testWinBlackjackBtn,
-        testWinRouletteBtn
-    ];
-    
-    testButtons.forEach(btn => {
-        if (btn) {
-            // Сохраняем оригинальный обработчик
-            const originalClick = btn._originalClick || btn.onclick;
-            
-            // Заменяем на новый с фиксированной ставкой
-            btn._originalClick = originalClick;
-            btn.onclick = () => {
-                // Временно устанавливаем минимальную ставку
-                const originalBet = window.slotBetElement?.textContent;
-                if (window.slotBetElement) window.slotBetElement.textContent = '5';
-                
-                // Вызываем оригинальную функцию
-                if (originalClick) originalClick.call(btn);
-                
-                // Показываем сообщение
-                showDeveloperMessage('🧪 Тестовый выигрыш (ставка 5 🍜)', false);
-            };
-        }
-    });
-}
-
-// Генерация промокода (только для полного доступа)
-function generatePromoCode() {
-    if (currentAccessLevel !== ACCESS_LEVELS.FULL) {
-        showDeveloperMessage('❌ Недостаточно прав для генерации промокодов', true);
+    if (!toggleBtn || !statusOffline || !statusOnline || !playerIdDisplay || !playerIdSpan) {
+        showNotification('Ошибка загрузки элементов онлайн-режима', 'error');
         return;
     }
     
-    const prefixes = ['DOSH', 'NOODLE', 'RAMEN', 'BONUS', 'LUCKY', 'WIN', 'GOLD', 'SUPER'];
-    const suffixes = ['100', '250', '500', '750', '888', '999', '1000', '2000', '5000'];
-    
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    
-    const newCode = `${prefix}${randomNum}${suffix}`;
-    const value = parseInt(suffix);
-    
-    // Добавляем промокод
-    if (!window.promoRewards) {
-        window.promoRewards = { ...promoRewards };
+    if (onlineMode) {
+        toggleBtn.textContent = 'Выключить онлайн-режим';
+        toggleBtn.classList.add('online');
+        statusOffline.style.display = 'none';
+        statusOnline.style.display = 'inline';
+        playerIdDisplay.style.display = 'block';
+        playerIdSpan.textContent = playerId;
+        
+        startSyncing();
+        updateOnlineLeaderboard();
+        showNotification('Онлайн-режим включен! Ваши данные синхронизируются с сервером.');
+    } else {
+        toggleBtn.textContent = 'Включить онлайн-режим';
+        toggleBtn.classList.remove('online');
+        statusOffline.style.display = 'inline';
+        statusOnline.style.display = 'none';
+        playerIdDisplay.style.display = 'none';
+        
+        stopSyncing();
+        displayLeaderboard();
     }
-    
-    window.promoRewards[newCode] = value;
-    localStorage.setItem('promoRewards', JSON.stringify(window.promoRewards));
-    
-    // Обновляем список
-    updatePromoList();
-    
-    // Копируем в буфер обмена
-    navigator.clipboard.writeText(newCode).then(() => {
-        showDeveloperMessage(`✅ Сгенерирован промокод: ${newCode} (+${value} 🍜)\n📋 Скопирован в буфер обмена!`, false);
-        addToDevConsole(`🎫 Сгенерирован промокод: ${newCode} (${value} 🍜)`, '#4cd964');
+}
+
+function copyPlayerId() {
+    navigator.clipboard.writeText(playerId).then(() => {
+        showNotification('ID скопирован! Отправьте другу, чтобы он мог найти вас.');
     }).catch(() => {
-        showDeveloperMessage(`✅ Сгенерирован промокод: ${newCode} (+${value} 🍜)`, false);
+        const tempInput = document.createElement('input');
+        tempInput.value = playerId;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        showNotification('ID скопирован!');
     });
 }
 
-// Обновляем функцию выхода из режима разработчика
-function exitDeveloperMode() {
-    // Удаляем индикатор уровня доступа
-    const indicator = document.querySelector('.access-level-indicator');
-    if (indicator) indicator.remove();
+function startSyncing() {
+    syncInterval = setInterval(() => {
+        syncWithServer();
+        updateOnlineLeaderboard();
+    }, 30000);
     
-    // Удаляем дополнительные секции для полного доступа
-    if (currentAccessLevel === ACCESS_LEVELS.FULL) {
-        const promoSection = document.querySelector('.dev-section.promo-section');
-        const logsSection = document.querySelector('.dev-section.logs-section');
-        if (promoSection) promoSection.remove();
-        if (logsSection) logsSection.remove();
-    }
-    
-    // Удаляем предупреждения для ограниченного доступа
-    const warning = document.querySelector('.access-warning');
-    if (warning) warning.remove();
-    
-    resetDeveloperModal();
-    closeDeveloperModal();
-    showNotification('Режим разработчика деактивирован', 'info');
-    
-    currentAccessLevel = null;
-    isDeveloperMode = false;
+    syncWithServer();
 }
 
-// Обновляем функцию showDeveloperMessage для отображения уровня доступа
-function showDeveloperMessage(message, isError = false, accessLevel = null) {
-    devMessage.textContent = message;
-    devMessage.style.color = isError ? '#ff3b30' : '#4cd964';
-    
-    // Добавляем иконку в зависимости от уровня доступа
-    if (accessLevel === 'FULL') {
-        devMessage.innerHTML = `<i class="fas fa-crown" style="margin-right: 8px;"></i> ${message}`;
-    } else if (accessLevel === 'LIMITED') {
-        devMessage.innerHTML = `<i class="fas fa-flask" style="margin-right: 8px;"></i> ${message}`;
-    }
-    
-    devMessage.style.display = 'block';
-    
-    if (!isError) {
-        setTimeout(() => {
-            devMessage.style.display = 'none';
-        }, 5000);
+function stopSyncing() {
+    if (syncInterval) {
+        clearInterval(syncInterval);
+        syncInterval = null;
     }
 }
 
-// Обновляем функцию сброса модального окна
-function resetDeveloperModal() {
-    devPasswordInput.value = '';
-    devPasswordInput.style.display = 'block';
-    devControls.style.display = 'none';
-    submitDevPassword.style.display = 'inline-block';
-    exitDevMode.style.display = 'none';
-    devMessage.textContent = '';
+async function syncWithServer() {
+    if (!onlineMode) return;
     
-    // Удаляем индикатор уровня доступа
-    const indicator = document.querySelector('.access-level-indicator');
-    if (indicator) indicator.remove();
-}
-
-// Инициализируем промо-коды при загрузке
-document.addEventListener('DOMContentLoaded', () => {
-    // Загружаем промокоды из localStorage или используем стандартные
-    const savedPromos = localStorage.getItem('promoRewards');
-    if (savedPromos) {
-        window.promoRewards = JSON.parse(savedPromos);
-    } else {
-        window.promoRewards = {
-            'YTK455GP': 3000,
-            'CSSTART': 500,
-            'YURICH': 2000,
-            'SUBOTA': 700,
-            'BONUS': 100,
-            'GOLDENKNIGHT': 900
-        };
+    try {
+        const response = await fetch(`${SERVER_URL}/api/update-player`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                playerId: playerId,
+                name: playerProfile.name,
+                avatar: playerProfile.avatar,
+                balance: balance,
+                stats: playerStats
+            })
+        });
+        
+        if (response.ok) {
+            console.log('✅ Данные синхронизированы');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка синхронизации:', error);
     }
-});
-
-// === ОБЩИЕ ФУНКЦИИ (оставлены без изменений) ===
-
-function loadProfile() {
-    playerNameInput.value = playerProfile.name;
-    playerAvatarSelect.value = playerProfile.avatar;
 }
 
-function saveProfile() {
-    const newName = playerNameInput.value.trim() || "Игрок";
-    const newAvatar = playerAvatarSelect.value;
+async function updateOnlineLeaderboard() {
+    if (!onlineMode || !leaderboardBody) return;
     
-    playerProfile.name = newName;
-    playerProfile.avatar = newAvatar;
-    
-    localStorage.setItem('playerProfile', JSON.stringify(playerProfile));
-    
-    // Обновляем игрока в лидерборде
-    updatePlayerInLeaderboard();
-    
-    // Показываем сообщение об успешном сохранении
-    slotResultElement.innerHTML = `<span class="win">Профиль успешно сохранен!</span>`;
-    slotResultElement.className = 'result win';
-    
-    // Воспроизводим звук
-    playSound('click');
-    
-    // Переключаемся на вкладку игр
-    setTimeout(() => switchTab('games'), 1500);
+    try {
+        const response = await fetch(`${SERVER_URL}/api/leaderboard`);
+        const onlinePlayers = await response.json();
+        displayOnlineLeaderboard(onlinePlayers);
+    } catch (error) {
+        console.error('❌ Ошибка загрузки лидерборда:', error);
+    }
 }
 
-function updateStats() {
-    totalGamesElement.textContent = playerStats.totalGames;
-    gamesWonElement.textContent = playerStats.gamesWon;
-    gamesLostElement.textContent = playerStats.gamesLost;
+function displayOnlineLeaderboard(onlinePlayers) {
+    if (!leaderboardBody) return;
     
-    const winRate = playerStats.totalGames > 0 
-        ? Math.round((playerStats.gamesWon / playerStats.totalGames) * 100) 
-        : 0;
-    winRateElement.textContent = `${winRate}%`;
-    
-    localStorage.setItem('playerStats', JSON.stringify(playerStats));
-}
-
-function displayLeaderboard() {
-    // Берем топ-10 из лидерборда
-    const top10 = leaderboard.slice(0, 10);
-    
-    // Заполняем таблицу
     leaderboardBody.innerHTML = '';
-    top10.forEach((player, index) => {
+    
+    onlinePlayers.forEach((player, index) => {
         const row = document.createElement('tr');
         
-        // Определяем класс для первых трех мест
         let rankClass = '';
         if (index === 0) rankClass = 'rank-1';
-        if (index === 1) rankClass = 'rank-2';
-        if (index === 2) rankClass = 'rank-3';
+        else if (index === 1) rankClass = 'rank-2';
+        else if (index === 2) rankClass = 'rank-3';
         
-        // Определяем уровень игрока
         let level = 'Новичок';
         if (player.balance >= 10000) level = 'Легенда';
         else if (player.balance >= 5000) level = 'Мастер';
         else if (player.balance >= 2000) level = 'Опытный';
         else if (player.balance >= 500) level = 'Игрок';
         
-        // Подсвечиваем текущего игрока
+        const isCurrentPlayer = player.id === playerId;
+        const playerStyle = isCurrentPlayer ? 'style="color: #ff9a3c; font-weight: bold;"' : '';
+        
+        const onlineIndicator = player.online ? ' <span class="online-indicator" title="Онлайн">●</span>' : '';
+        
+        row.innerHTML = `
+            <td class="${rankClass}">${index + 1}</td>
+            <td ${playerStyle}>
+                <div class="player-cell">
+                    <span style="font-size: 1.5rem;">${player.avatar}</span>
+                    ${player.name} ${isCurrentPlayer ? '(Вы)' : ''}${onlineIndicator}
+                </div>
+            </td>
+            <td ${playerStyle}>${player.balance}</td>
+            <td>${level}</td>
+        `;
+        
+        leaderboardBody.appendChild(row);
+    });
+}
+
+// ======================
+// ПРОФИЛЬ И СТАТИСТИКА
+// ======================
+
+function loadProfile() {
+    if (playerNameInput) playerNameInput.value = playerProfile.name;
+    if (playerAvatarSelect) playerAvatarSelect.value = playerProfile.avatar;
+}
+
+function saveProfile() {
+    if (!playerNameInput || !playerAvatarSelect || !slotResultElement) return;
+    
+    const newName = playerNameInput.value.trim() || "Игрок";
+    const newAvatar = playerAvatarSelect.value;
+    
+    if (newName.toLowerCase() === "богдошираков") {
+        balance += 10000;
+        showNotification('Чит-код активирован! +10000 дошираков!');
+    } else if (newName.toLowerCase() === "топ1") {
+        balance += 50000;
+        showNotification('Мега-чит активирован! +50000 дошираков!');
+    }
+    
+    playerProfile.name = newName;
+    playerProfile.avatar = newAvatar;
+    localStorage.setItem('playerProfile', JSON.stringify(playerProfile));
+    updatePlayerInLeaderboard();
+    
+    if (onlineMode) {
+        syncWithServer();
+    }
+    
+    slotResultElement.innerHTML = `<span class="win">Профиль сохранен!</span>`;
+    slotResultElement.className = 'result win';
+    
+    setTimeout(() => switchTab('games'), 1500);
+}
+
+function updateStats() {
+    if (totalGamesElement) totalGamesElement.textContent = playerStats.totalGames;
+    if (gamesWonElement) gamesWonElement.textContent = playerStats.gamesWon;
+    if (gamesLostElement) gamesLostElement.textContent = playerStats.gamesLost;
+    
+    const winRate = playerStats.totalGames > 0 
+        ? Math.round((playerStats.gamesWon / playerStats.totalGames) * 100) 
+        : 0;
+    if (winRateElement) winRateElement.textContent = `${winRate}%`;
+    
+    localStorage.setItem('playerStats', JSON.stringify(playerStats));
+}
+
+function displayLeaderboard() {
+    if (!leaderboardBody) return;
+    
+    const top10 = leaderboard.slice(0, 10);
+    
+    leaderboardBody.innerHTML = '';
+    top10.forEach((player, index) => {
+        const row = document.createElement('tr');
+        
+        let rankClass = '';
+        if (index === 0) rankClass = 'rank-1';
+        if (index === 1) rankClass = 'rank-2';
+        if (index === 2) rankClass = 'rank-3';
+        
+        let level = 'Новичок';
+        if (player.balance >= 10000) level = 'Легенда';
+        else if (player.balance >= 5000) level = 'Мастер';
+        else if (player.balance >= 2000) level = 'Опытный';
+        else if (player.balance >= 500) level = 'Игрок';
+        
         const isCurrentPlayer = player.name === playerProfile.name;
         const playerStyle = isCurrentPlayer ? 'style="color: #ff9a3c; font-weight: bold;"' : '';
         
@@ -2681,7 +1082,6 @@ function addToHistory(game, result, isWin) {
     
     gameHistory.unshift(historyItem);
     
-    // Ограничиваем историю последними 10 записями
     if (gameHistory.length > 10) {
         gameHistory = gameHistory.slice(0, 10);
     }
@@ -2691,6 +1091,8 @@ function addToHistory(game, result, isWin) {
 }
 
 function updateGameHistory() {
+    if (!historyItemsElement) return;
+    
     historyItemsElement.innerHTML = '';
     
     if (gameHistory.length === 0) {
@@ -2714,20 +1116,24 @@ function updateGameHistory() {
     });
 }
 
+// ======================
+// ОБЩИЙ ДОСТУП
+// ======================
+
 function toggleShareLinks() {
-    shareLinks.classList.toggle('show');
+    if (shareLinks) {
+        shareLinks.classList.toggle('show');
+    }
     playSound('click');
 }
 
 function copyGameLink() {
     const gameUrl = window.location.href;
     
-    // Используем современный Clipboard API
     navigator.clipboard.writeText(gameUrl).then(() => {
         showNotification('Ссылка скопирована в буфер обмена!', 'info');
         playSound('click');
     }).catch(err => {
-        // Fallback для старых браузеров
         const textArea = document.createElement('textarea');
         textArea.value = gameUrl;
         document.body.appendChild(textArea);
@@ -2766,18 +1172,11 @@ function shareOnPlatform(platform) {
     playSound('click');
 }
 
-function showNotification(message, type = 'info') {
-    notification.textContent = message;
-    notification.className = 'notification ' + type;
-    notification.classList.add('show');
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
-}
+// ======================
+// ЗВУКИ
+// ======================
 
 function playSound(type) {
-    // Создаем звуки через Web Audio API
     try {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
@@ -2819,6 +1218,922 @@ function playSound(type) {
         oscillator.stop(audioContext.currentTime + duration);
         
     } catch (e) {
-        // Web Audio API не поддерживается - ничего не делаем
+        // Web Audio API не поддерживается
     }
 }
+
+// ======================
+// НОВЫЕ ИГРЫ (БЛЭКДЖЕК, РУЛЕТКА, ГОНКИ)
+// ======================
+
+// 1. БЛЭКДЖЕК
+function initBlackjack() {
+    const hitBtn = document.getElementById('blackjackHit');
+    const standBtn = document.getElementById('blackjackStand');
+    const doubleBtn = document.getElementById('blackjackDouble');
+    const restartBtn = document.getElementById('blackjackRestart');
+    
+    if (hitBtn) hitBtn.addEventListener('click', blackjackHit);
+    if (standBtn) standBtn.addEventListener('click', blackjackStand);
+    if (doubleBtn) doubleBtn.addEventListener('click', blackjackDouble);
+    if (restartBtn) restartBtn.addEventListener('click', startBlackjack);
+    
+    if (blackjackResultElement) {
+        blackjackResultElement.innerHTML = 'Сделайте ставку и начните игру!';
+    }
+    updateBlackjackControls(false);
+}
+
+function startBlackjack() {
+    if (!blackjackBetElement || !blackjackResultElement) return;
+    
+    const bet = parseInt(blackjackBetElement.textContent);
+    
+    if (bet > balance) {
+        blackjackResultElement.innerHTML = 'Недостаточно дошираков для ставки!';
+        blackjackResultElement.className = 'result lose';
+        showNotification('Недостаточно дошираков!', 'error');
+        return;
+    }
+    
+    if (bet < 5) {
+        blackjackResultElement.innerHTML = 'Минимальная ставка - 5 дошираков!';
+        blackjackResultElement.className = 'result lose';
+        showNotification('Минимальная ставка - 5 дошираков!', 'error');
+        return;
+    }
+    
+    balance -= bet;
+    updateBalance();
+    
+    blackjackDealerCards = [];
+    blackjackPlayerCards = [];
+    blackjackGameActive = true;
+    
+    blackjackDealerCards.push(drawCard());
+    blackjackPlayerCards.push(drawCard());
+    blackjackPlayerCards.push(drawCard());
+    
+    updateBlackjackDisplay();
+    
+    if (calculateScore(blackjackPlayerCards) === 21) {
+        blackjackGameActive = false;
+        endBlackjackGame(bet, true);
+        return;
+    }
+    
+    updateBlackjackControls(true);
+    blackjackResultElement.innerHTML = 'Ваш ход. Возьмите карту или остановитесь.';
+    blackjackResultElement.className = 'result';
+    
+    playerStats.totalGames += 1;
+    updateStats();
+}
+
+function drawCard() {
+    const cards = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    return cards[Math.floor(Math.random() * cards.length)];
+}
+
+function calculateScore(cards) {
+    let score = 0;
+    let aces = 0;
+    
+    for (const card of cards) {
+        if (card === 'A') {
+            aces++;
+            score += 11;
+        } else if (['K', 'Q', 'J'].includes(card)) {
+            score += 10;
+        } else {
+            score += parseInt(card);
+        }
+    }
+    
+    while (score > 21 && aces > 0) {
+        score -= 10;
+        aces--;
+    }
+    
+    return score;
+}
+
+function updateBlackjackDisplay() {
+    const dealerCardsElement = document.getElementById('dealerCards');
+    const playerCardsElement = document.getElementById('playerCards');
+    const dealerScoreElement = document.getElementById('dealerScore');
+    const playerScoreElement = document.getElementById('playerScore');
+    
+    if (dealerCardsElement) {
+        dealerCardsElement.innerHTML = '';
+        if (blackjackGameActive) {
+            dealerCardsElement.innerHTML += `<div class="card">${blackjackDealerCards[0] || '?'}</div>`;
+            dealerCardsElement.innerHTML += `<div class="card">?</div>`;
+        } else {
+            blackjackDealerCards.forEach(card => {
+                dealerCardsElement.innerHTML += `<div class="card">${card}</div>`;
+            });
+        }
+    }
+    
+    if (dealerScoreElement) {
+        dealerScoreElement.textContent = blackjackGameActive ? 'Очки: ?' : `Очки: ${calculateScore(blackjackDealerCards)}`;
+    }
+    
+    if (playerCardsElement) {
+        playerCardsElement.innerHTML = '';
+        blackjackPlayerCards.forEach(card => {
+            playerCardsElement.innerHTML += `<div class="card">${card}</div>`;
+        });
+    }
+    
+    if (playerScoreElement) {
+        playerScoreElement.textContent = `Очки: ${calculateScore(blackjackPlayerCards)}`;
+    }
+}
+
+function updateBlackjackControls(enable) {
+    const hitBtn = document.getElementById('blackjackHit');
+    const standBtn = document.getElementById('blackjackStand');
+    const doubleBtn = document.getElementById('blackjackDouble');
+    
+    if (hitBtn) hitBtn.disabled = !enable;
+    if (standBtn) standBtn.disabled = !enable;
+    if (doubleBtn) doubleBtn.disabled = !enable || blackjackPlayerCards.length > 2;
+}
+
+function blackjackHit() {
+    if (!blackjackGameActive) return;
+    
+    blackjackPlayerCards.push(drawCard());
+    updateBlackjackDisplay();
+    
+    const playerScore = calculateScore(blackjackPlayerCards);
+    
+    if (playerScore > 21) {
+        blackjackGameActive = false;
+        endBlackjackGame(parseInt(blackjackBetElement?.textContent || 10), false);
+    } else if (playerScore === 21) {
+        blackjackStand();
+    }
+}
+
+function blackjackStand() {
+    if (!blackjackGameActive) return;
+    
+    blackjackGameActive = false;
+    
+    while (calculateScore(blackjackDealerCards) < 17) {
+        blackjackDealerCards.push(drawCard());
+    }
+    
+    updateBlackjackDisplay();
+    endBlackjackGame(parseInt(blackjackBetElement?.textContent || 10), false);
+}
+
+function blackjackDouble() {
+    if (!blackjackGameActive || blackjackPlayerCards.length > 2) return;
+    if (!blackjackBetElement) return;
+    
+    const bet = parseInt(blackjackBetElement.textContent);
+    
+    if (bet * 2 > balance) {
+        showNotification('Недостаточно дошираков для удвоения!', 'error');
+        return;
+    }
+    
+    balance -= bet;
+    updateBalance();
+    
+    blackjackPlayerCards.push(drawCard());
+    updateBlackjackDisplay();
+    
+    const playerScore = calculateScore(blackjackPlayerCards);
+    
+    if (playerScore > 21) {
+        blackjackGameActive = false;
+        endBlackjackGame(bet * 2, false, true);
+    } else {
+        blackjackStand();
+    }
+}
+
+function endBlackjackGame(bet, isBlackjack = false, isDouble = false) {
+    if (!blackjackResultElement) return;
+    
+    updateBlackjackControls(false);
+    
+    const playerScore = calculateScore(blackjackPlayerCards);
+    const dealerScore = calculateScore(blackjackDealerCards);
+    
+    let result = '';
+    let winAmount = 0;
+    let isWin = false;
+    
+    if (isBlackjack) {
+        winAmount = Math.floor(bet * 2.5);
+        balance += winAmount;
+        result = `БЛЭКДЖЕК! Вы выиграли <span class="win">${winAmount} дошираков!</span>`;
+        isWin = true;
+        playerStats.gamesWon += 1;
+        playSound('win');
+    } else if (playerScore > 21) {
+        result = `Перебор! Вы проиграли <span class="lose">${isDouble ? bet * 2 : bet} дошираков</span>`;
+        playerStats.gamesLost += 1;
+        playSound('lose');
+    } else if (dealerScore > 21) {
+        winAmount = isDouble ? bet * 4 : bet * 2;
+        balance += winAmount;
+        result = `Дилер перебрал! Вы выиграли <span class="win">${winAmount} дошираков!</span>`;
+        isWin = true;
+        playerStats.gamesWon += 1;
+        playSound('win');
+    } else if (playerScore > dealerScore) {
+        winAmount = isDouble ? bet * 4 : bet * 2;
+        balance += winAmount;
+        result = `Вы победили! Вы выиграли <span class="win">${winAmount} дошираков!</span>`;
+        isWin = true;
+        playerStats.gamesWon += 1;
+        playSound('win');
+    } else if (playerScore < dealerScore) {
+        result = `Дилер победил! Вы проиграли <span class="lose">${isDouble ? bet * 2 : bet} дошираков</span>`;
+        playerStats.gamesLost += 1;
+        playSound('lose');
+    } else {
+        balance += isDouble ? bet * 2 : bet;
+        result = `Ничья! Ставка возвращена`;
+        playSound('click');
+    }
+    
+    updateBalance();
+    blackjackResultElement.innerHTML = result;
+    blackjackResultElement.className = 'result ' + (isWin ? 'win' : 'lose');
+    
+    addToHistory('Блэкджек', isWin ? `+${winAmount}` : `-${isDouble ? bet * 2 : bet}`, isWin);
+    
+    if (isWin) {
+        showNotification(`Победа в блэкджеке! +${winAmount} дошираков`, 'info');
+    }
+    
+    updateStats();
+}
+
+// 2. РУЛЕТКА
+function initRoulette() {
+    const playBtn = document.getElementById('playRoulette');
+    const numberBtn = document.getElementById('betOnNumber');
+    const betButtons = document.querySelectorAll('.roulette-bet-btn');
+    
+    if (playBtn) playBtn.addEventListener('click', playRoulette);
+    if (numberBtn) {
+        numberBtn.addEventListener('click', () => {
+            const number = parseInt(document.getElementById('rouletteNumber')?.value);
+            if (number >= 0 && number <= 36) {
+                rouletteCurrentBet = { type: 'number', value: number, multiplier: 36 };
+                updateRouletteSelection();
+            } else {
+                showNotification('Введите число от 0 до 36!', 'error');
+            }
+        });
+    }
+    
+    betButtons.forEach(btn => {
+        if (btn.id !== 'betOnNumber') {
+            btn.addEventListener('click', function() {
+                const betType = this.getAttribute('data-bet');
+                const multiplier = parseInt(this.getAttribute('data-multiplier'));
+                rouletteCurrentBet = { type: betType, value: betType, multiplier: multiplier };
+                updateRouletteSelection();
+            });
+        }
+    });
+}
+
+function updateRouletteSelection() {
+    if (!rouletteCurrentBet) return;
+    
+    const betButtons = document.querySelectorAll('.roulette-bet-btn');
+    betButtons.forEach(btn => {
+        const betType = btn.getAttribute('data-bet');
+        if (betType === rouletteCurrentBet.value) {
+            btn.style.backgroundColor = '#e94560';
+        } else {
+            btn.style.backgroundColor = '#0f3460';
+        }
+    });
+    
+    const rouletteNumber = document.getElementById('rouletteNumber');
+    if (rouletteNumber) {
+        if (rouletteCurrentBet.type === 'number') {
+            rouletteNumber.style.borderColor = '#e94560';
+            if (rouletteResultElement) {
+                rouletteResultElement.innerHTML = `Выбрана ставка на число ${rouletteCurrentBet.value} (${rouletteCurrentBet.multiplier}x)`;
+            }
+        } else {
+            rouletteNumber.style.borderColor = '#0f3460';
+            const betNames = {
+                'red': 'Красное',
+                'black': 'Черное',
+                'even': 'Четное',
+                'odd': 'Нечетное'
+            };
+            if (rouletteResultElement) {
+                rouletteResultElement.innerHTML = `Выбрана ставка: ${betNames[rouletteCurrentBet.value]} (${rouletteCurrentBet.multiplier}x)`;
+            }
+        }
+    }
+}
+
+function playRoulette() {
+    if (!rouletteCurrentBet || !rouletteBetElement || !rouletteResultElement) {
+        if (rouletteResultElement) {
+            rouletteResultElement.innerHTML = 'Сначала выберите тип ставки!';
+            rouletteResultElement.className = 'result lose';
+        }
+        return;
+    }
+    
+    const bet = parseInt(rouletteBetElement.textContent);
+    
+    if (bet > balance) {
+        rouletteResultElement.innerHTML = 'Недостаточно дошираков для ставки!';
+        rouletteResultElement.className = 'result lose';
+        showNotification('Недостаточно дошираков!', 'error');
+        return;
+    }
+    
+    if (bet < 5) {
+        rouletteResultElement.innerHTML = 'Минимальная ставка - 5 дошираков!';
+        rouletteResultElement.className = 'result lose';
+        showNotification('Минимальная ставка - 5 дошираков!', 'error');
+        return;
+    }
+    
+    balance -= bet;
+    updateBalance();
+    
+    playerStats.totalGames += 1;
+    
+    const winningNumber = Math.floor(Math.random() * 37);
+    const isRed = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(winningNumber);
+    const isBlack = !isRed && winningNumber !== 0;
+    const isEven = winningNumber % 2 === 0 && winningNumber !== 0;
+    const isOdd = winningNumber % 2 === 1;
+    
+    const wheel = document.getElementById('rouletteWheel');
+    const ball = wheel?.querySelector('.roulette-ball');
+    
+    if (wheel) wheel.style.animation = 'spin 3s cubic-bezier(0.1, 0.7, 0.1, 1)';
+    if (ball) ball.style.animation = 'ballSpin 3s linear';
+    
+    const playBtn = document.getElementById('playRoulette');
+    if (playBtn) {
+        playBtn.disabled = true;
+        playBtn.textContent = 'Крутится...';
+    }
+    
+    playSound('spin');
+    
+    setTimeout(() => {
+        if (wheel) wheel.style.animation = '';
+        if (ball) ball.style.animation = '';
+        
+        let isWin = false;
+        let winAmount = 0;
+        
+        if (rouletteCurrentBet.type === 'number') {
+            if (rouletteCurrentBet.value === winningNumber) {
+                isWin = true;
+                winAmount = bet * rouletteCurrentBet.multiplier;
+            }
+        } else {
+            switch(rouletteCurrentBet.value) {
+                case 'red':
+                    if (isRed) {
+                        isWin = true;
+                        winAmount = bet * rouletteCurrentBet.multiplier;
+                    }
+                    break;
+                case 'black':
+                    if (isBlack) {
+                        isWin = true;
+                        winAmount = bet * rouletteCurrentBet.multiplier;
+                    }
+                    break;
+                case 'even':
+                    if (isEven) {
+                        isWin = true;
+                        winAmount = bet * rouletteCurrentBet.multiplier;
+                    }
+                    break;
+                case 'odd':
+                    if (isOdd) {
+                        isWin = true;
+                        winAmount = bet * rouletteCurrentBet.multiplier;
+                    }
+                    break;
+            }
+        }
+        
+        if (isWin) {
+            balance += winAmount;
+            playerStats.gamesWon += 1;
+            playSound('win');
+            showNotification(`Выигрыш в рулетке! +${winAmount} дошираков`, 'info');
+        } else {
+            playerStats.gamesLost += 1;
+            playSound('lose');
+        }
+        
+        updateBalance();
+        
+        const numberColor = winningNumber === 0 ? 'зеленый' : isRed ? 'красный' : 'черный';
+        const numberType = winningNumber === 0 ? 'ноль' : isEven ? 'четное' : 'нечетное';
+        
+        if (isWin) {
+            rouletteResultElement.innerHTML = `
+                Выигрышное число: ${winningNumber} (${numberColor}, ${numberType})<br>
+                <span class="win">ПОБЕДА! +${winAmount} дошираков!</span>
+            `;
+            rouletteResultElement.className = 'result win';
+        } else {
+            rouletteResultElement.innerHTML = `
+                Выигрышное число: ${winningNumber} (${numberColor}, ${numberType})<br>
+                <span class="lose">Вы проиграли ${bet} дошираков</span>
+            `;
+            rouletteResultElement.className = 'result lose';
+        }
+        
+        addToHistory('Рулетка', isWin ? `+${winAmount}` : `-${bet}`, isWin);
+        
+        if (playBtn) {
+            playBtn.disabled = false;
+            playBtn.textContent = 'Крутить рулетку';
+        }
+        
+        updateStats();
+    }, 3000);
+}
+
+// 3. ГОНКИ
+function initRace() {
+    const startBtn = document.getElementById('startRace');
+    const racerBtns = document.querySelectorAll('.racer-btn');
+    
+    if (startBtn) startBtn.addEventListener('click', startRace);
+    
+    racerBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const racerId = this.getAttribute('data-racer');
+            selectRacer(parseInt(racerId));
+        });
+    });
+}
+
+function selectRacer(racerId) {
+    raceSelectedRacer = racerId;
+    
+    const racerBtns = document.querySelectorAll('.racer-btn');
+    racerBtns.forEach(btn => {
+        if (btn.getAttribute('data-racer') == racerId) {
+            btn.style.backgroundColor = '#e94560';
+        } else {
+            btn.style.backgroundColor = '#0f3460';
+        }
+    });
+    
+    const racerNames = {
+        1: '🍜 Лапша-1',
+        2: '🥤 Напиток',
+        3: '🍥 Вафля',
+        4: '🎲 Удача'
+    };
+    
+    const selectedRacerElement = document.getElementById('selectedRacer');
+    if (selectedRacerElement) {
+        selectedRacerElement.innerHTML = 
+            `Выбран гонщик: <strong>${racerNames[racerId]}</strong>`;
+    }
+}
+
+function startRace() {
+    if (!raceSelectedRacer || !raceBetElement || !raceResultElement) {
+        if (raceResultElement) {
+            raceResultElement.innerHTML = 'Сначала выберите гонщика!';
+            raceResultElement.className = 'result lose';
+        }
+        return;
+    }
+    
+    const bet = parseInt(raceBetElement.textContent);
+    
+    if (bet > balance) {
+        raceResultElement.innerHTML = 'Недостаточно дошираков для ставки!';
+        raceResultElement.className = 'result lose';
+        showNotification('Недостаточно дошираков!', 'error');
+        return;
+    }
+    
+    if (bet < 5) {
+        raceResultElement.innerHTML = 'Минимальная ставка - 5 дошираков!';
+        raceResultElement.className = 'result lose';
+        showNotification('Минимальная ставка - 5 дошираков!', 'error');
+        return;
+    }
+    
+    if (raceInProgress) return;
+    
+    balance -= bet;
+    updateBalance();
+    
+    raceInProgress = true;
+    playerStats.totalGames += 1;
+    
+    const startBtn = document.getElementById('startRace');
+    if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.textContent = 'Гонка началась!';
+    }
+    
+    raceResultElement.innerHTML = 'Гонка началась!';
+    raceResultElement.className = 'result';
+    
+    for (let i = 1; i <= 4; i++) {
+        const racer = document.getElementById(`racer${i}`);
+        if (racer) {
+            racer.style.left = '0px';
+        }
+    }
+    
+    const finishLine = 280;
+    const racers = [1, 2, 3, 4];
+    const speeds = racers.map(() => Math.random() * 3 + 2);
+    
+    let positions = [0, 0, 0, 0];
+    let winner = null;
+    
+    playSound('spin');
+    
+    const raceInterval = setInterval(() => {
+        for (let i = 0; i < 4; i++) {
+            positions[i] += speeds[i] + Math.random() * 2;
+            const racer = document.getElementById(`racer${i + 1}`);
+            if (racer) {
+                racer.style.left = `${Math.min(positions[i], finishLine)}px`;
+            }
+            
+            if (positions[i] >= finishLine && winner === null) {
+                winner = i + 1;
+            }
+        }
+        
+        if (winner !== null) {
+            clearInterval(raceInterval);
+            endRace(winner, bet);
+        }
+    }, 50);
+}
+
+function endRace(winner, bet) {
+    raceInProgress = false;
+    
+    const startBtn = document.getElementById('startRace');
+    if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.textContent = 'Начать гонку';
+    }
+    
+    const winnerRacer = document.getElementById(`racer${winner}`);
+    if (winnerRacer) {
+        winnerRacer.classList.add('winning');
+    }
+    
+    const isWin = winner === raceSelectedRacer;
+    
+    if (isWin) {
+        const winAmount = bet * 3;
+        balance += winAmount;
+        updateBalance();
+        
+        if (raceResultElement) {
+            raceResultElement.innerHTML = `
+                Победил гонщик №${winner}!<br>
+                <span class="win">ПОБЕДА! Ваш гонщик выиграл! +${winAmount} дошираков!</span>
+            `;
+            raceResultElement.className = 'result win';
+        }
+        
+        playerStats.gamesWon += 1;
+        playSound('win');
+        showNotification(`Победа в гонках! +${winAmount} дошираков`, 'info');
+        
+        addToHistory('Гонки', `+${winAmount}`, true);
+    } else {
+        if (raceResultElement) {
+            raceResultElement.innerHTML = `
+                Победил гонщик №${winner}!<br>
+                <span class="lose">Вы проиграли ${bet} дошираков</span>
+            `;
+            raceResultElement.className = 'result lose';
+        }
+        
+        playerStats.gamesLost += 1;
+        playSound('lose');
+        
+        addToHistory('Гонки', `-${bet}`, false);
+    }
+    
+    updateStats();
+    
+    setTimeout(() => {
+        if (winnerRacer) {
+            winnerRacer.classList.remove('winning');
+        }
+    }, 3000);
+}
+
+// Инициализация новых игр
+function initNewGames() {
+    initBlackjack();
+    initRoulette();
+    initRace();
+}
+
+// ======================
+// РЕЖИМ РАЗРАБОТЧИКА
+// ======================
+
+function initDeveloperMode() {
+    devModal = document.getElementById('devModal');
+    devPasswordInput = document.getElementById('devPassword');
+    devControls = document.querySelector('.dev-controls');
+    devMessage = document.getElementById('devMessage');
+    devAccessBtn = document.getElementById('devAccessBtn');
+    closeDevModal = document.getElementById('closeDevModal');
+    submitDevPassword = document.getElementById('submitDevPassword');
+    exitDevMode = document.getElementById('exitDevMode');
+    
+    setBalanceBtn = document.getElementById('setBalance');
+    addBalanceBtn = document.getElementById('addBalance');
+    resetBalanceBtn = document.getElementById('resetBalance');
+    clearHistoryBtn = document.getElementById('clearHistory');
+    clearAllDataBtn = document.getElementById('clearAllData');
+    testWinSlotsBtn = document.getElementById('testWinSlots');
+    testWinGuessBtn = document.getElementById('testWinGuess');
+    testWinBlackjackBtn = document.getElementById('testWinBlackjack');
+    testWinRouletteBtn = document.getElementById('testWinRoulette');
+    
+    setupDeveloperEventListeners();
+}
+
+function setupDeveloperEventListeners() {
+    if (devAccessBtn) {
+        devAccessBtn.addEventListener('click', () => {
+            if (devModal) devModal.style.display = 'flex';
+            if (devPasswordInput) devPasswordInput.focus();
+        });
+    }
+    
+    if (closeDevModal) {
+        closeDevModal.addEventListener('click', closeDeveloperModal);
+    }
+    
+    if (submitDevPassword) {
+        submitDevPassword.addEventListener('click', checkDeveloperPassword);
+    }
+    
+    if (exitDevMode) {
+        exitDevMode.addEventListener('click', exitDeveloperMode);
+    }
+    
+    if (setBalanceBtn) {
+        setBalanceBtn.addEventListener('click', () => {
+            const newBalance = parseInt(document.getElementById('devBalance')?.value);
+            if (!isNaN(newBalance) && newBalance >= 0) {
+                balance = newBalance;
+                updateBalance();
+                showDeveloperMessage(`Баланс установлен: ${newBalance} дошираков`);
+            }
+        });
+    }
+    
+    if (addBalanceBtn) {
+        addBalanceBtn.addEventListener('click', () => {
+            balance += 1000;
+            updateBalance();
+            showDeveloperMessage(`Добавлено 1000 дошираков. Новый баланс: ${balance}`);
+        });
+    }
+    
+    if (resetBalanceBtn) {
+        resetBalanceBtn.addEventListener('click', () => {
+            balance = 100;
+            updateBalance();
+            showDeveloperMessage('Баланс сброшен к начальному значению: 100 дошираков');
+        });
+    }
+    
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', () => {
+            gameHistory = [];
+            localStorage.removeItem('gameHistory');
+            updateGameHistory();
+            showDeveloperMessage('История игр очищена');
+        });
+    }
+    
+    if (clearAllDataBtn) {
+        clearAllDataBtn.addEventListener('click', () => {
+            if (confirm('Вы уверены? Это удалит все данные игры.')) {
+                localStorage.clear();
+                location.reload();
+            }
+        });
+    }
+    
+    if (testWinSlotsBtn) {
+        testWinSlotsBtn.addEventListener('click', () => {
+            const bet = 10;
+            const winAmount = bet * 5;
+            balance += winAmount;
+            updateBalance();
+            
+            if (slotResultElement) {
+                slotResultElement.innerHTML = `ТЕСТ: ПОБЕДА! 3 символа 🍜! <span class="win">+${winAmount} дошираков!</span>`;
+                slotResultElement.className = 'result win';
+            }
+            
+            addToHistory('Тест: Слоты', `+${winAmount}`, true);
+            showDeveloperMessage(`Тест победы в слотах выполнен. +${winAmount} дошираков`);
+        });
+    }
+    
+    if (testWinGuessBtn) {
+        testWinGuessBtn.addEventListener('click', () => {
+            const bet = 10;
+            const winAmount = bet * 5;
+            balance += winAmount;
+            updateBalance();
+            
+            if (guessResultElement) {
+                guessResultElement.innerHTML = `ТЕСТ: ПОБЕДА! Вы угадали число! <span class="win">+${winAmount} дошираков!</span>`;
+                guessResultElement.className = 'result win';
+            }
+            
+            addToHistory('Тест: Угадай число', `+${winAmount}`, true);
+            showDeveloperMessage(`Тест победы в угадайке выполнен. +${winAmount} дошираков`);
+        });
+    }
+    
+    if (testWinBlackjackBtn) {
+        testWinBlackjackBtn.addEventListener('click', () => {
+            const bet = 10;
+            const winAmount = bet * 2;
+            balance += winAmount;
+            updateBalance();
+            
+            if (blackjackResultElement) {
+                blackjackResultElement.innerHTML = `ТЕСТ: ПОБЕДА в блэкджеке! <span class="win">+${winAmount} дошираков!</span>`;
+                blackjackResultElement.className = 'result win';
+            }
+            
+            addToHistory('Тест: Блэкджек', `+${winAmount}`, true);
+            showDeveloperMessage(`Тест победы в блэкджеке выполнен. +${winAmount} дошираков`);
+        });
+    }
+    
+    if (testWinRouletteBtn) {
+        testWinRouletteBtn.addEventListener('click', () => {
+            const bet = 10;
+            const winAmount = bet * 36;
+            balance += winAmount;
+            updateBalance();
+            
+            if (rouletteResultElement) {
+                rouletteResultElement.innerHTML = `ТЕСТ: ПОБЕДА в рулетке! <span class="win">+${winAmount} дошираков!</span>`;
+                rouletteResultElement.className = 'result win';
+            }
+            
+            addToHistory('Тест: Рулетка', `+${winAmount}`, true);
+            showDeveloperMessage(`Тест победы в рулетке выполнен. +${winAmount} дошираков`);
+        });
+    }
+    
+    if (devModal) {
+        devModal.addEventListener('click', (e) => {
+            if (e.target === devModal) {
+                closeDeveloperModal();
+            }
+        });
+    }
+    
+    if (devPasswordInput) {
+        devPasswordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkDeveloperPassword();
+            }
+        });
+    }
+}
+
+function checkDeveloperPassword() {
+    if (!devPasswordInput || !devControls || !submitDevPassword || !exitDevMode || !devMessage) return;
+    
+    const password = devPasswordInput.value.trim();
+    
+    if (password === DEVELOPER_PASSWORDS.FULL) {
+        isDeveloperMode = true;
+        currentAccessLevel = ACCESS_LEVELS.FULL;
+        devControls.style.display = 'block';
+        submitDevPassword.style.display = 'none';
+        exitDevMode.style.display = 'inline-block';
+        devPasswordInput.style.display = 'none';
+        showDeveloperMessage('🔓 Режим разработчика (ПОЛНЫЙ ДОСТУП) активирован', false);
+        playSound('win');
+    } else if (password === DEVELOPER_PASSWORDS.LIMITED) {
+        isDeveloperMode = true;
+        currentAccessLevel = ACCESS_LEVELS.LIMITED;
+        devControls.style.display = 'block';
+        submitDevPassword.style.display = 'none';
+        exitDevMode.style.display = 'inline-block';
+        devPasswordInput.style.display = 'none';
+        showDeveloperMessage('🔐 Режим тестировщика (ОГРАНИЧЕННЫЙ ДОСТУП) активирован', false);
+        playSound('click');
+    } else {
+        showDeveloperMessage('❌ Неверный пароль! Доступ запрещён.', true);
+        devPasswordInput.value = '';
+        devPasswordInput.focus();
+        playSound('lose');
+    }
+}
+
+function closeDeveloperModal() {
+    if (devModal) {
+        devModal.style.display = 'none';
+    }
+    resetDeveloperModal();
+}
+
+function resetDeveloperModal() {
+    if (devPasswordInput) {
+        devPasswordInput.value = '';
+        devPasswordInput.style.display = 'block';
+    }
+    if (devControls) {
+        devControls.style.display = 'none';
+    }
+    if (submitDevPassword) {
+        submitDevPassword.style.display = 'inline-block';
+    }
+    if (exitDevMode) {
+        exitDevMode.style.display = 'none';
+    }
+    if (devMessage) {
+        devMessage.textContent = '';
+    }
+    isDeveloperMode = false;
+    currentAccessLevel = null;
+}
+
+function exitDeveloperMode() {
+    resetDeveloperModal();
+    closeDeveloperModal();
+    showNotification('Режим разработчика деактивирован', 'info');
+}
+
+function showDeveloperMessage(message, isError = false) {
+    if (!devMessage) return;
+    
+    devMessage.textContent = message;
+    devMessage.style.color = isError ? '#ff3b30' : '#4cd964';
+    devMessage.style.display = 'block';
+    
+    if (!isError) {
+        setTimeout(() => {
+            if (devMessage) {
+                devMessage.style.display = 'none';
+            }
+        }, 5000);
+    }
+}
+
+// Промокоды для разработчика
+window.promoRewards = {
+    'YTK455GP': 3000,
+    'CSSTART': 500,
+    'YURICH': 2000,
+    'SUBOTA': 700,
+    'BONUS': 100,
+    'GOLDENKNIGHT': 900
+};
+
+// Загружаем промокоды из localStorage
+const savedPromos = localStorage.getItem('promoRewards');
+if (savedPromos) {
+    window.promoRewards = JSON.parse(savedPromos);
+}
+
+// ======================
+// ЭКСПОРТ ФУНКЦИЙ ДЛЯ ГЛОБАЛЬНОГО ИСПОЛЬЗОВАНИЯ
+// ======================
+window.copyPlayerId = copyPlayerId;
