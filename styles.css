@@ -2381,3 +2381,265 @@ body {
         text-align: center;
     }
 }
+
+/* Добавьте в конец файла styles.css */
+
+/* ========== ИСПРАВЛЕНИЕ ВЫЛЕЗАЮЩИХ КНОПОК ========== */
+
+/* Ограничение ширины контейнера ставок */
+.bet-controls {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.bet-buttons {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 100%;
+}
+
+/* Адаптация кнопок ставок для мобильных */
+@media screen and (max-width: 767px) {
+    .bet-buttons {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 5px;
+        width: 100%;
+    }
+    
+    .bet-btn {
+        width: 100%;
+        height: 44px;
+        font-size: 1rem;
+        padding: 0;
+    }
+    
+    .bet-amount {
+        grid-column: span 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 154, 60, 0.2);
+        border-radius: 8px;
+        padding: 0 5px;
+    }
+    
+    /* Специально для кнопок -1000 и +1000 на мобильных */
+    .bet-btn[data-change="-1000"],
+    .bet-btn[data-change="1000"] {
+        background: #e94560;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .bet-buttons {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    /* Скрываем кнопки +/-1000 на очень маленьких экранах */
+    .bet-btn[data-change="-1000"],
+    .bet-btn[data-change="1000"] {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 380px) {
+    .bet-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    /* Скрываем кнопки +/-100 на очень маленьких экранах */
+    .bet-btn[data-change="-100"],
+    .bet-btn[data-change="100"] {
+        display: none;
+    }
+}
+
+/* Исправление для кнопок в гонках */
+.racer-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+@media screen and (max-width: 767px) {
+    .racer-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .racer-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Исправление для кнопок блэкджека */
+.blackjack-controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+@media screen and (max-width: 767px) {
+    .blackjack-controls {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .blackjack-controls {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Исправление для кнопок рулетки */
+.roulette-bet-type {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+@media screen and (max-width: 480px) {
+    .roulette-bet-type {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Исправление для поля ввода числа в рулетке */
+.roulette-number-select {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.roulette-number-select input {
+    flex: 1;
+    min-width: 80px;
+}
+
+@media screen and (max-width: 767px) {
+    .roulette-number-select {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Исправление для секции онлайн */
+.online-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#toggleOnline {
+    width: 100%;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Исправление для модального окна разработчика */
+.dev-input-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+@media screen and (max-width: 767px) {
+    .dev-input-group {
+        flex-direction: column;
+    }
+    
+    .dev-input-group input,
+    .dev-input-group button {
+        width: 100%;
+    }
+}
+
+.dev-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+@media screen and (max-width: 480px) {
+    .dev-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Исправление для слотов на мобильных */
+@media screen and (max-width: 767px) {
+    .slots-container {
+        justify-content: space-around;
+    }
+    
+    .slot {
+        width: calc(33.33% - 10px);
+        max-width: 90px;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        font-size: clamp(1.5rem, 6vw, 2.5rem);
+    }
+}
+
+/* Исправление для трека гонок */
+.race-track {
+    position: relative;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.racer {
+    position: absolute;
+    left: 0;
+    max-width: 40px;
+}
+
+.finish-line {
+    right: 10px;
+}
+
+/* Исправление для таблицы лидерборда */
+.leaderboard-table {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+}
+
+.leaderboard-table table {
+    width: 100%;
+    min-width: 500px;
+}
+
+@media screen and (max-width: 767px) {
+    .leaderboard-table {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Исправление для карт в блэкджеке */
+.cards-container {
+    flex-wrap: wrap;
+}
+
+.card {
+    margin-bottom: 5px;
+}
+
+/* Исправление для поля промокода */
+.profile-field .dev-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+@media screen and (max-width: 767px) {
+    .profile-field .dev-input-group {
+        flex-direction: column;
+    }
+    
+    #activatePromo {
+        width: 100%;
+    }
+}
