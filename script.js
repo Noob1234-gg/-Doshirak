@@ -326,11 +326,12 @@ function activatePromoCode() {
     
     // Определяем награду по промокоду
     const promoRewards = {
-        'DOSHIRAK500': 500,
-        'NOODLE750': 750,
-        'RAMEN888': 888,
-        'BONUS1000': 1000,
-        'LUCKY900': 900
+        'YTK455GP': 3000,
+        'CSSTART': 500,
+        'YURICH': 2000,
+        'SUBOTA': 700,
+        'BONUS': 100,
+        'GOLDENKNIGHT': 900
     };
     
     const reward = promoRewards[code];
