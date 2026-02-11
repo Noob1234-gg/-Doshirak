@@ -2266,3 +2266,118 @@ body {
 
 /* Остальные стили из вашего исходного файла остаются без изменений */
 /* ... (весь остальной CSS-код, который был до медиа-запросов) ... */
+
+/* ========== СТИЛИ ДЛЯ РЕЖИМА РАЗРАБОТЧИКА ========== */
+
+/* Индикатор уровня доступа */
+.access-level-indicator {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стили для списка промокодов */
+#promoList {
+    scrollbar-width: thin;
+    scrollbar-color: #e94560 #0f3460;
+}
+
+#promoList::-webkit-scrollbar {
+    width: 6px;
+}
+
+#promoList::-webkit-scrollbar-track {
+    background: #0f3460;
+    border-radius: 3px;
+}
+
+#promoList::-webkit-scrollbar-thumb {
+    background: #e94560;
+    border-radius: 3px;
+}
+
+/* Консоль разработчика */
+#devConsole {
+    scrollbar-width: thin;
+    scrollbar-color: #ff9a3c #0f3460;
+    line-height: 1.4;
+}
+
+#devConsole::-webkit-scrollbar {
+    width: 6px;
+}
+
+#devConsole::-webkit-scrollbar-track {
+    background: #0f3460;
+    border-radius: 3px;
+}
+
+#devConsole::-webkit-scrollbar-thumb {
+    background: #ff9a3c;
+    border-radius: 3px;
+}
+
+/* Анимация для новых элементов в консоли */
+#devConsole div:last-child {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Стили для кнопок в режиме разработчика */
+.dev-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.dev-btn:active {
+    transform: scale(0.95);
+}
+
+/* Индикатор прав доступа в шапке */
+.developer-badge {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 30px;
+    color: white;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+    border: 2px solid;
+    animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+    0% { box-shadow: 0 0 5px currentColor; }
+    50% { box-shadow: 0 0 15px currentColor; }
+    100% { box-shadow: 0 0 5px currentColor; }
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 767px) {
+    .developer-badge {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        justify-content: center;
+    }
+    
+    .access-level-indicator div {
+        flex-direction: column;
+        text-align: center;
+    }
+}
